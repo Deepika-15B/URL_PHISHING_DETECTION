@@ -7,7 +7,7 @@ HEAD
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![IEEE](https://img.shields.io/badge/IEEE-Paper%20Implementation-00629B?style=for-the-badge&logo=ieee&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Phase%201%20%7C%20Structure-yellow?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
 
 **A production-grade implementation of the IEEE phishing-URL detection research,  
 featuring multi-layer feature engineering, ensemble ML classifiers, and a real-time Flask API.**
@@ -25,10 +25,10 @@ featuring multi-layer feature engineering, ensemble ML classifiers, and a real-t
 5. [Feature Engineering Roadmap](#feature-engineering-roadmap)
 6. [Technology Stack](#technology-stack)
 7. [Getting Started](#getting-started)
-8. [Development Phases](#development-phases)
-9. [API Reference](#api-reference)
-10. [Contributing](#contributing)
-11. [License](#license)
+
+8. [API Reference](#api-reference)
+9. [Contributing](#contributing)
+
 
 ---
 
@@ -244,19 +244,6 @@ PORT=5000
 
 ---
 
-## Development Phases
-
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **Phase 1** | ✅ Complete | Project structure, dependencies, documentation |
-| **Phase 2** | 🔲 Planned | Feature extraction (`utils/`) — all 29 IEEE features |
-| **Phase 3** | 🔲 Planned | Model training, evaluation, serialisation (`models/`) |
-| **Phase 4** | 🔲 Planned | Flask API endpoints for real-time prediction |
-| **Phase 5** | 🔲 Planned | Frontend dashboard (HTML/CSS/JS) |
-| **Phase 6** | 🔲 Planned | SHAP / LIME explainability layer |
-| **Phase 7** | 🔲 Planned | Report generation & CI/CD pipeline |
-
----
 
 ## API Reference
 
@@ -310,11 +297,8 @@ Content-Type: application/json
 Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages  
 and ensure all tests pass (`pytest --cov`) before submitting.
 
----
 
-## License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
