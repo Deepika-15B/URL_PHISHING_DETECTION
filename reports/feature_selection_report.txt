@@ -1,0 +1,97 @@
+========================================================================
+IEEE PHISHING DETECTION PROJECT - FEATURE SELECTION REPORT
+Generated: 2026-07-14 20:25:50
+========================================================================
+
+INPUT AND SELECTION SUMMARY
+------------------------------------------------------------------------
+Original feature count : 101
+Selected feature count : 14
+Reduction percentage   : 86.14%
+Execution time         : 1157.52 seconds
+
+RANDOM FOREST PARAMETERS
+------------------------------------------------------------------------
+bootstrap: True
+ccp_alpha: 0.0
+class_weight: None
+criterion: gini
+max_depth: None
+max_features: sqrt
+max_leaf_nodes: None
+max_samples: None
+min_impurity_decrease: 0.0
+min_samples_leaf: 1
+min_samples_split: 2
+min_weight_fraction_leaf: 0.0
+monotonic_cst: None
+n_estimators: 100
+n_jobs: None
+oob_score: False
+random_state: 42
+verbose: 0
+warm_start: False
+
+PERMUTATION IMPORTANCE PARAMETERS
+------------------------------------------------------------------------
+n_repeats: 10
+random_state: 42
+
+FEATURE IMPORTANCE STATISTICS
+------------------------------------------------------------------------
+Maximum importance: 0.06824318
+Mean importance   : 0.00249564
+Median importance : 0.00000174
+Minimum importance: -0.00000523
+Std. deviation    : 0.00800151
+
+TOP 20 FEATURES
+------------------------------------------------------------------------
+ 1. time_domain_activation: 0.06824318
+ 2. directory_length: 0.02632001
+ 3. length_url: 0.02251720
+ 4. ttl_hostname: 0.01563627
+ 5. qty_dot_domain: 0.01543768
+ 6. asn_ip: 0.01100775
+ 7. time_response: 0.01072380
+ 8. time_domain_expiration: 0.00914554
+ 9. tls_ssl_certificate: 0.00780246
+10. qty_mx_servers: 0.00748889
+11. qty_vowels_domain: 0.00735302
+12. qty_nameservers: 0.00587057
+13. domain_length: 0.00571727
+14. qty_dot_url: 0.00564759
+15. qty_slash_url: 0.00507970
+16. qty_ip_resolved: 0.00420347
+17. qty_redirects: 0.00390036
+18. qty_hyphen_url: 0.00364602
+19. file_length: 0.00336382
+20. qty_hyphen_directory: 0.00234823
+
+TOP 14 SELECTED FEATURES
+------------------------------------------------------------------------
+ 1. time_domain_activation
+ 2. directory_length
+ 3. length_url
+ 4. ttl_hostname
+ 5. qty_dot_domain
+ 6. asn_ip
+ 7. time_response
+ 8. time_domain_expiration
+ 9. tls_ssl_certificate
+10. qty_mx_servers
+11. qty_vowels_domain
+12. qty_nameservers
+13. domain_length
+14. qty_dot_url
+
+WHY THESE FEATURES MATTER FOR PHISHING DETECTION
+------------------------------------------------------------------------
+Permutation importance selects features whose disruption most reduces
+Random Forest classification accuracy. The selected features therefore
+provide the strongest observed signal for separating phishing from
+legitimate websites in this IEEE preprocessing output. Reducing the
+training matrix to these high-impact variables removes weaker or
+redundant signals while retaining the features most useful to the
+classifier. No feature names are manually prescribed; the ranking is
+derived entirely from the current preprocessed dataset.
