@@ -1,0 +1,261 @@
+========================================================================
+  IEEE PHISHING DETECTION PROJECT - PREPROCESSING REPORT
+  Generated : 2026-07-14  20:03:20
+  Dataset   : dataset_small.csv
+========================================================================
+
+------------------------------------------------------------------------
+  STEP 1 - DATASET LOADED
+------------------------------------------------------------------------
+  Original rows    : 58,645
+  Original columns : 112
+  Target column    : 'phishing'
+
+------------------------------------------------------------------------
+  STEP 2 - DUPLICATE REMOVAL
+------------------------------------------------------------------------
+  Duplicate rows removed : 1,240
+  Rows after removal     : 57,405
+
+------------------------------------------------------------------------
+  STEP 3 - CONSTANT COLUMN REMOVAL
+------------------------------------------------------------------------
+  Columns removed : 13
+  Column Name                              Reason
+  ---------------------------------------- --------------------
+  qty_slash_domain                         zero variance (always 0)
+  qty_questionmark_domain                  zero variance (always 0)
+  qty_equal_domain                         zero variance (always 0)
+  qty_and_domain                           zero variance (always 0)
+  qty_exclamation_domain                   zero variance (always 0)
+  qty_space_domain                         zero variance (always 0)
+  qty_tilde_domain                         zero variance (always 0)
+  qty_comma_domain                         zero variance (always 0)
+  qty_plus_domain                          zero variance (always 0)
+  qty_asterisk_domain                      zero variance (always 0)
+  qty_hashtag_domain                       zero variance (always 0)
+  qty_dollar_domain                        zero variance (always 0)
+  qty_percent_domain                       zero variance (always 0)
+
+------------------------------------------------------------------------
+  STEP 4+5 - SENTINEL VALUE HANDLING  (-1)
+------------------------------------------------------------------------
+
+  Strategy A: Structural Sentinels (URL segment absent)  ->  0 + indicator
+  Indicator Column     Group Columns (count)     Treatment
+  -------------------- ------------------------- -------------------------
+  has_directory        18 feature cols           -1 -> 0  +  binary indicator
+  has_file             18 feature cols           -1 -> 0  +  binary indicator
+  has_params           20 feature cols           -1 -> 0  +  binary indicator
+
+  Strategy B: Missing-Data Sentinels (lookup failed)  ->  NaN -> median
+  Column                              Sentinel->NaN   Median Used
+  ----------------------------------- --------------- -----------
+  time_response                       -1 -> NaN       0.4772
+  domain_spf                          -1 -> NaN       0.0000
+  asn_ip                              -1 -> NaN       22923.0000
+  time_domain_activation              -1 -> NaN       3298.0000
+  time_domain_expiration              -1 -> NaN       260.0000
+  qty_ip_resolved                     -1 -> NaN       1.0000
+  ttl_hostname                        -1 -> NaN       1797.0000
+  qty_redirects                       -1 -> NaN       0.0000
+  url_google_index                    -1 -> NaN       0.0000
+  domain_google_index                 -1 -> NaN       0.0000
+
+------------------------------------------------------------------------
+  STEP 6 - MEDIAN IMPUTATION
+------------------------------------------------------------------------
+  NaN values before imputation : 65,268
+  NaN values after  imputation : 0
+
+  Column                              Median Value
+  ----------------------------------- ------------
+  time_response                             0.4772
+  domain_spf                                0.0000
+  asn_ip                                22923.0000
+  time_domain_activation                 3298.0000
+  time_domain_expiration                  260.0000
+  qty_ip_resolved                           1.0000
+  ttl_hostname                           1797.0000
+  qty_redirects                             0.0000
+  url_google_index                          0.0000
+  domain_google_index                       0.0000
+
+------------------------------------------------------------------------
+  STEP 7 - NUMERIC TYPE NORMALISATION
+------------------------------------------------------------------------
+  All feature columns cast to float32.
+  Target column retained as int64.
+
+------------------------------------------------------------------------
+  STEP 8 - FEATURE SCALING
+------------------------------------------------------------------------
+  Method        : MinMaxScaler  (IEEE paper specification)
+  Formula       : X_scaled = (X - X_min) / (X_max - X_min)
+  Output range  : [0, 1]
+  Fitted on     : Training data only (prevents data leakage)
+  Excluded col  : 'phishing' (target label â€” not scaled)
+
+------------------------------------------------------------------------
+  STEP 9+10 - SAVED ARTEFACTS
+------------------------------------------------------------------------
+  models/scaler.pkl                    - Fitted MinMaxScaler
+  models/preprocessed_feature_names.pkl- 101 feature names (ordered)
+
+------------------------------------------------------------------------
+  FINAL FEATURE INVENTORY  (101 features)
+------------------------------------------------------------------------
+     1. qty_dot_url
+     2. qty_hyphen_url
+     3. qty_underline_url
+     4. qty_slash_url
+     5. qty_questionmark_url
+     6. qty_equal_url
+     7. qty_at_url
+     8. qty_and_url
+     9. qty_exclamation_url
+    10. qty_space_url
+    11. qty_tilde_url
+    12. qty_comma_url
+    13. qty_plus_url
+    14. qty_asterisk_url
+    15. qty_hashtag_url
+    16. qty_dollar_url
+    17. qty_percent_url
+    18. qty_tld_url
+    19. length_url
+    20. qty_dot_domain
+    21. qty_hyphen_domain
+    22. qty_underline_domain
+    23. qty_at_domain
+    24. qty_vowels_domain
+    25. domain_length
+    26. domain_in_ip
+    27. server_client_domain
+    28. has_directory
+    29. qty_dot_directory
+    30. qty_hyphen_directory
+    31. qty_underline_directory
+    32. qty_slash_directory
+    33. qty_questionmark_directory
+    34. qty_equal_directory
+    35. qty_at_directory
+    36. qty_and_directory
+    37. qty_exclamation_directory
+    38. qty_space_directory
+    39. qty_tilde_directory
+    40. qty_comma_directory
+    41. qty_plus_directory
+    42. qty_asterisk_directory
+    43. qty_hashtag_directory
+    44. qty_dollar_directory
+    45. qty_percent_directory
+    46. directory_length
+    47. has_file
+    48. qty_dot_file
+    49. qty_hyphen_file
+    50. qty_underline_file
+    51. qty_slash_file
+    52. qty_questionmark_file
+    53. qty_equal_file
+    54. qty_at_file
+    55. qty_and_file
+    56. qty_exclamation_file
+    57. qty_space_file
+    58. qty_tilde_file
+    59. qty_comma_file
+    60. qty_plus_file
+    61. qty_asterisk_file
+    62. qty_hashtag_file
+    63. qty_dollar_file
+    64. qty_percent_file
+    65. file_length
+    66. has_params
+    67. qty_dot_params
+    68. qty_hyphen_params
+    69. qty_underline_params
+    70. qty_slash_params
+    71. qty_questionmark_params
+    72. qty_equal_params
+    73. qty_at_params
+    74. qty_and_params
+    75. qty_exclamation_params
+    76. qty_space_params
+    77. qty_tilde_params
+    78. qty_comma_params
+    79. qty_plus_params
+    80. qty_asterisk_params
+    81. qty_hashtag_params
+    82. qty_dollar_params
+    83. qty_percent_params
+    84. params_length
+    85. tld_present_params
+    86. qty_params
+    87. email_in_url
+    88. time_response
+    89. domain_spf
+    90. asn_ip
+    91. time_domain_activation
+    92. time_domain_expiration
+    93. qty_ip_resolved
+    94. qty_nameservers
+    95. qty_mx_servers
+    96. ttl_hostname
+    97. tls_ssl_certificate
+    98. qty_redirects
+    99. url_google_index
+   100. domain_google_index
+   101. url_shortened
+
+========================================================================
+  IEEE METHODOLOGY SUMMARY
+========================================================================
+
+PREPROCESSING PIPELINE SUMMARY
+-------------------------------------------------------------------------
+
+The preprocessing pipeline transforms the raw dataset_small.csv into a
+clean, normalised feature matrix ready for the feature selection phase
+of the IEEE phishing detection methodology.
+
+PIPELINE TRANSFORMATIONS APPLIED
+-------------------------------------------------------------------------
+  Raw input features         : 111
+  Constant columns dropped   : 13
+  Structural sentinel groups : 3  (directory, file, params)
+  Binary indicators added    : 3  (has_directory, has_file, has_params)
+  Missing-data cols imputed  : 10
+  Final feature count        : 101
+  Scaling method             : MinMaxScaler  -> range [0, 1]
+
+DATA QUALITY OUTCOMES
+-------------------------------------------------------------------------
+  Duplicate rows removed     : 1,240
+  NaN values after pipeline  : 0  (fully imputed)
+  Data type                  : float32 (memory-optimised)
+
+READINESS FOR FEATURE SELECTION (PHASE 3)
+-------------------------------------------------------------------------
+The output matrix is structurally sound and normalised to the [0, 1]
+range as required by the IEEE paper.  The next phase will apply feature
+selection techniques (e.g. mutual information, chi-squared, or feature
+importance from tree-based models) to rank the retained features and
+identify the most discriminative subset for training the phishing
+detection classifier.
+
+KEY DESIGN DECISIONS
+-------------------------------------------------------------------------
+1. Sentinel values were handled differently per semantic group:
+   - Structural sentinels (directory/file/params) replaced with 0 +
+     binary presence indicators, preserving URL structure information.
+   - Missing-data sentinels (network/DNS/WHOIS) replaced with NaN and
+     median-imputed to maintain statistical validity.
+2. MinMaxScaler was chosen over z-score normalisation because the IEEE
+   paper's deep learning models require bounded [0, 1] inputs, and
+   MinMaxScaler is invariant to Gaussian assumptions.
+3. The scaler is fitted exclusively on training data and serialised,
+   ensuring inference-time consistency without data leakage.
+4. Constant columns were removed before scaling to avoid degenerate
+   MinMaxScaler columns (X_max = X_min -> division by zero).
+-------------------------------------------------------------------------
+END OF REPORT

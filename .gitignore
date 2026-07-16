@@ -47,6 +47,9 @@ data/raw/
 data/processed/
 data/external/
 *.csv
+!data/dataset_small.csv
+!data/dataset_full.csv
+!data/dataset_small_preprocessed.csv
 *.tsv
 *.xlsx
 *.xls
@@ -57,6 +60,12 @@ data/external/
 *.h5
 *.hdf5
 *.pkl
+!models/scaler.pkl
+!models/preprocessed_feature_names.pkl
+!models/top14_features.pkl
+!models/top20_features.pkl
+!models/training_history.pkl
+!models/fnn_model.keras
 *.pickle
 
 # ── Trained Models ───────────────────────────────────────────
