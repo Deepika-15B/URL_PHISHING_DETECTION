@@ -1,0 +1,64 @@
+========================================================================
+IEEE PHISHING DETECTION PROJECT - FNN TRAINING REPORT
+Generated: 2026-07-14 20:32:40
+========================================================================
+
+DATASET AND SPLIT
+------------------------------------------------------------------------
+Dataset size: 57,405 samples
+Training samples: 45,924
+Validation samples: 11,481
+Input features (14): time_domain_activation, directory_length, length_url, ttl_hostname, qty_dot_domain, asn_ip, time_response, time_domain_expiration, tls_ssl_certificate, qty_mx_servers, qty_vowels_domain, qty_nameservers, domain_length, qty_dot_url
+Target column: phishing
+Split: train_test_split(test_size=0.20, stratify=y, random_state=42)
+
+MODEL ARCHITECTURE
+------------------------------------------------------------------------
+Model: "ieee_phishing_fnn"
++--------------------------------------------------------------------------+
+| Layer (type)                    | Output Shape           |       Param # |
+|---------------------------------+------------------------+---------------|
+| dense_64 (Dense)                | (None, 64)             |           960 |
+|---------------------------------+------------------------+---------------|
+| dropout_64 (Dropout)            | (None, 64)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense_32 (Dense)                | (None, 32)             |         2,080 |
+|---------------------------------+------------------------+---------------|
+| dropout_32 (Dropout)            | (None, 32)             |             0 |
+|---------------------------------+------------------------+---------------|
+| phishing_probability (Dense)    | (None, 1)              |            33 |
++--------------------------------------------------------------------------+
+ Total params: 9,221 (36.02 KB)
+ Trainable params: 3,073 (12.00 KB)
+ Non-trainable params: 0 (0.00 B)
+ Optimizer params: 6,148 (24.02 KB)
+
+
+Trainable parameters: 3,073
+Loss: Binary Crossentropy
+Optimizer: Adam (learning_rate=0.001)
+Metrics: Accuracy, Precision, Recall, AUC
+Training configuration: epochs=40, batch_size=32
+Early stopping: monitor=val_loss, patience=5, restore_best_weights=True
+Early stopping triggered: False
+Epochs completed: 40
+Training time: 101.22 seconds
+
+VALIDATION METRICS
+------------------------------------------------------------------------
+Accuracy: 0.920303
+Precision: 0.923668
+Recall: 0.926545
+F1 Score: 0.925104
+ROC AUC: 0.975056
+Confusion matrix:
+[[4915  467]
+ [ 448 5651]]
+
+FINAL CONCLUSION
+------------------------------------------------------------------------
+The FNN was trained once on the automatically selected Top 14 features from
+the IEEE phishing dataset. These inputs are the features whose permutation
+most affected Random Forest classification, so they provide a compact and
+informative representation for the neural network. The saved .keras model,
+history, and reports are ready for the next inference-pipeline phase.
