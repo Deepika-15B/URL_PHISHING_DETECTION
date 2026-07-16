@@ -1,0 +1,107 @@
+# ============================================================
+# .gitignore — Phishing Detection IEEE
+# ============================================================
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+MANIFEST
+
+# ── Virtual Environments ─────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# ── Jupyter Notebooks ────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── IDE / Editor ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Data Files (large / sensitive) ───────────────────────────
+data/raw/
+data/processed/
+data/external/
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.json
+*.jsonl
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# ── Trained Models ───────────────────────────────────────────
+models/saved/
+models/checkpoints/
+*.pt
+*.pth
+*.bin
+*.onnx
+*.joblib
+
+# ── Reports / Outputs ────────────────────────────────────────
+reports/figures/
+reports/outputs/
+*.pdf
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── OS Artifacts ─────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── Coverage ─────────────────────────────────────────────────
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ── Flask / Web ──────────────────────────────────────────────
+instance/
+.webassets-cache
+flask_session/
+
+# ── Secrets ──────────────────────────────────────────────────
+.env
+.env.*
+secrets.yaml
+config/local*.yaml
