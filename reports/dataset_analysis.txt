@@ -1,0 +1,552 @@
+========================================================================
+  IEEE PHISHING DETECTION PROJECT - DATASET ANALYSIS REPORT
+  Generated : 2026-07-14  19:27:24
+  Datasets  : dataset_small.csv  |  dataset_full.csv
+========================================================================
+
+========================================================================
+  SECTION: SMALL DATASET
+========================================================================
+
+----------------------------------------
+  1. SHAPE
+----------------------------------------
+  Rows    : 58,645
+  Columns : 112
+
+----------------------------------------
+  2. COLUMN NAMES  (112 total)
+----------------------------------------
+  qty_dot_url                      qty_hyphen_url                   qty_underline_url                qty_slash_url                 
+  qty_questionmark_url             qty_equal_url                    qty_at_url                       qty_and_url                   
+  qty_exclamation_url              qty_space_url                    qty_tilde_url                    qty_comma_url                 
+  qty_plus_url                     qty_asterisk_url                 qty_hashtag_url                  qty_dollar_url                
+  qty_percent_url                  qty_tld_url                      length_url                       qty_dot_domain                
+  qty_hyphen_domain                qty_underline_domain             qty_slash_domain                 qty_questionmark_domain       
+  qty_equal_domain                 qty_at_domain                    qty_and_domain                   qty_exclamation_domain        
+  qty_space_domain                 qty_tilde_domain                 qty_comma_domain                 qty_plus_domain               
+  qty_asterisk_domain              qty_hashtag_domain               qty_dollar_domain                qty_percent_domain            
+  qty_vowels_domain                domain_length                    domain_in_ip                     server_client_domain          
+  qty_dot_directory                qty_hyphen_directory             qty_underline_directory          qty_slash_directory           
+  qty_questionmark_directory       qty_equal_directory              qty_at_directory                 qty_and_directory             
+  qty_exclamation_directory        qty_space_directory              qty_tilde_directory              qty_comma_directory           
+  qty_plus_directory               qty_asterisk_directory           qty_hashtag_directory            qty_dollar_directory          
+  qty_percent_directory            directory_length                 qty_dot_file                     qty_hyphen_file               
+  qty_underline_file               qty_slash_file                   qty_questionmark_file            qty_equal_file                
+  qty_at_file                      qty_and_file                     qty_exclamation_file             qty_space_file                
+  qty_tilde_file                   qty_comma_file                   qty_plus_file                    qty_asterisk_file             
+  qty_hashtag_file                 qty_dollar_file                  qty_percent_file                 file_length                   
+  qty_dot_params                   qty_hyphen_params                qty_underline_params             qty_slash_params              
+  qty_questionmark_params          qty_equal_params                 qty_at_params                    qty_and_params                
+  qty_exclamation_params           qty_space_params                 qty_tilde_params                 qty_comma_params              
+  qty_plus_params                  qty_asterisk_params              qty_hashtag_params               qty_dollar_params             
+  qty_percent_params               params_length                    tld_present_params               qty_params                    
+  email_in_url                     time_response                    domain_spf                       asn_ip                        
+  time_domain_activation           time_domain_expiration           qty_ip_resolved                  qty_nameservers               
+  qty_mx_servers                   ttl_hostname                     tls_ssl_certificate              qty_redirects                 
+  url_google_index                 domain_google_index              url_shortened                    phishing                      
+
+----------------------------------------
+  3. DATA TYPES
+----------------------------------------
+  Dtype distribution:
+    int64        : 111 column(s)
+    float64      : 1 column(s)
+
+----------------------------------------
+  4. MISSING VALUES  (genuine NaN)
+----------------------------------------
+  ✓  No NaN values found in this dataset.
+     Note: Missing information is encoded as sentinel value −1.
+
+----------------------------------------
+  5. DUPLICATE ROWS
+----------------------------------------
+  Duplicate rows : 1,240  (2.114 %)
+
+----------------------------------------
+  6-8. CLASS DISTRIBUTION
+----------------------------------------
+  Label                     Count   Percentage
+  -------------------- ---------- ------------
+  Legitimate  (0)          27,998       47.74 %
+  Phishing    (1)          30,647       52.26 %
+  -------------------- ---------- ------------
+  TOTAL                    58,645     100.00 %
+
+  Imbalance ratio (min:maj) : 0.9136
+
+----------------------------------------
+  9. MEMORY USAGE
+----------------------------------------
+  50.112 MB  (52,546,052 bytes)
+
+----------------------------------------
+  10. BASIC STATISTICS  (pandas describe)
+----------------------------------------
+
+        qty_dot_url  qty_hyphen_url  qty_underline_url  qty_slash_url  qty_questionmark_url  qty_equal_url    qty_at_url   qty_and_url  qty_exclamation_url  qty_space_url  qty_tilde_url  qty_comma_url  qty_plus_url  qty_asterisk_url  qty_hashtag_url  qty_dollar_url  qty_percent_url   qty_tld_url    length_url  qty_dot_domain  qty_hyphen_domain  qty_underline_domain  qty_slash_domain  qty_questionmark_domain  qty_equal_domain  qty_at_domain  qty_and_domain  qty_exclamation_domain  qty_space_domain  qty_tilde_domain  qty_comma_domain  qty_plus_domain  qty_asterisk_domain  qty_hashtag_domain  qty_dollar_domain  qty_percent_domain  qty_vowels_domain  domain_length  domain_in_ip  server_client_domain  qty_dot_directory  qty_hyphen_directory  qty_underline_directory  qty_slash_directory  qty_questionmark_directory  qty_equal_directory  qty_at_directory  qty_and_directory  qty_exclamation_directory  qty_space_directory  qty_tilde_directory  qty_comma_directory  qty_plus_directory  qty_asterisk_directory  qty_hashtag_directory  qty_dollar_directory  qty_percent_directory  directory_length  qty_dot_file  qty_hyphen_file  qty_underline_file  qty_slash_file  qty_questionmark_file  qty_equal_file   qty_at_file  qty_and_file  qty_exclamation_file  qty_space_file  qty_tilde_file  qty_comma_file  qty_plus_file  qty_asterisk_file  qty_hashtag_file  qty_dollar_file  qty_percent_file   file_length  qty_dot_params  qty_hyphen_params  qty_underline_params  qty_slash_params  qty_questionmark_params  qty_equal_params  qty_at_params  qty_and_params  qty_exclamation_params  qty_space_params  qty_tilde_params  qty_comma_params  qty_plus_params  qty_asterisk_params  qty_hashtag_params  qty_dollar_params  qty_percent_params  params_length  tld_present_params    qty_params  email_in_url  time_response    domain_spf         asn_ip  time_domain_activation  time_domain_expiration  qty_ip_resolved  qty_nameservers  qty_mx_servers  ttl_hostname  tls_ssl_certificate  qty_redirects  url_google_index  domain_google_index  url_shortened      phishing
+count  58645.000000    58645.000000       58645.000000   58645.000000          58645.000000   58645.000000  58645.000000  58645.000000         58645.000000   58645.000000   58645.000000   58645.000000  58645.000000      58645.000000     58645.000000    58645.000000     58645.000000  58645.000000  58645.000000    58645.000000       58645.000000          58645.000000           58645.0                  58645.0           58645.0   58645.000000         58645.0                 58645.0           58645.0           58645.0           58645.0          58645.0              58645.0             58645.0            58645.0             58645.0       58645.000000   58645.000000  58645.000000          58645.000000       58645.000000          58645.000000             58645.000000         58645.000000                58645.000000         58645.000000      58645.000000       58645.000000               58645.000000         58645.000000         58645.000000         58645.000000        58645.000000            58645.000000           58645.000000          58645.000000           58645.000000      58645.000000  58645.000000     58645.000000        58645.000000    58645.000000           58645.000000    58645.000000  58645.000000  58645.000000          58645.000000    58645.000000    58645.000000    58645.000000   58645.000000       58645.000000      58645.000000     58645.000000      58645.000000  58645.000000    58645.000000       58645.000000          58645.000000      58645.000000             58645.000000      58645.000000   58645.000000    58645.000000            58645.000000      58645.000000      58645.000000      58645.000000     58645.000000         58645.000000        58645.000000       58645.000000        58645.000000   58645.000000        58645.000000  58645.000000  58645.000000   58645.000000  58645.000000   58645.000000            58645.000000            58645.000000     58645.000000     58645.000000    58645.000000  58645.000000         58645.000000   58645.000000      58645.000000         58645.000000   58645.000000  58645.000000
+mean       2.284338        0.457123           0.171285       1.937522              0.014102       0.311177      0.033456      0.212959             0.004451       0.001535       0.004877       0.003274      0.004212          0.006855         0.000767        0.002865         0.162503      1.068429     44.959297        1.799540           0.133294              0.000290               0.0                      0.0               0.0       0.000017             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           5.440992      18.073016      0.003427              0.003530           0.022338             -0.033814                -0.210947             1.590383                   -0.298525            -0.287049         -0.293409          -0.291704                  -0.296070            -0.297331            -0.293733            -0.297451           -0.296905               -0.292932              -0.298525             -0.296547              -0.219200         16.923932     -0.045750        -0.211084           -0.260466       -0.298525              -0.298525       -0.296035     -0.298082     -0.296377             -0.296956       -0.297877       -0.298082       -0.297672      -0.297366          -0.296752         -0.298525        -0.298525         -0.242305      4.659067       -0.714451          -0.816506             -0.791781         -0.830898                -0.860670         -0.587723      -0.846193       -0.680791               -0.872692         -0.873323         -0.873357         -0.871242        -0.870969            -0.873305           -0.873442          -0.872862           -0.791559       8.482462           -0.836354     -0.636832      0.027709       0.776379     -0.030147   33140.826447             2531.939483              293.615074         1.110666         2.829619        1.630113   5056.676272             0.501373       0.303419          0.001279             0.002234       0.008287      0.522585
+std        1.473209        1.339340           0.801919       2.037525              0.138156       1.159198      0.343272      1.130323             0.107352       0.089320       0.096013       0.093381      0.136331          0.370849         0.075802        0.122604         2.115804      0.305755     54.712657        0.790989           0.465673              0.019802               0.0                      0.0               0.0       0.004129             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           2.714293       7.244541      0.058444              0.059307           0.932358              1.231963                 0.702284             2.269983                    0.457615             0.483261          0.539680           0.517823                   0.465111             0.465625             0.470538             0.461188            0.471482                0.580336               0.457615              0.472520               1.826009         28.066352      0.762056         0.870709            0.606537        0.457615               0.457615        0.463333      0.458425      0.461529              0.460601        0.461782        0.458945        0.460731       0.468779           0.531246          0.457615         0.457615          1.713954     16.358671        1.193137           0.771199              0.797698          0.663899                 0.386856          1.345035       0.432952        1.235146                0.339404          0.333280          0.332832          0.347086         0.347966             0.333350            0.332480           0.336390            1.285886      42.598270            0.459396      1.137735      0.164139       1.572495      0.591021   50339.910407             2799.792419              562.400108         0.912962         1.377018        1.719554   7102.853538             0.500002       0.815315          0.037599             0.047927       0.090657      0.499494
+min        1.000000        0.000000           0.000000       0.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      0.000000      4.000000        0.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           0.000000       4.000000      0.000000              0.000000          -1.000000             -1.000000                -1.000000            -1.000000                   -1.000000            -1.000000         -1.000000          -1.000000                  -1.000000            -1.000000            -1.000000            -1.000000           -1.000000               -1.000000              -1.000000             -1.000000              -1.000000         -1.000000     -1.000000        -1.000000           -1.000000       -1.000000              -1.000000       -1.000000     -1.000000     -1.000000             -1.000000       -1.000000       -1.000000       -1.000000      -1.000000          -1.000000         -1.000000        -1.000000         -1.000000     -1.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000      -1.000000     -1.000000      -1.000000               -1.000000               -1.000000        -1.000000         0.000000        0.000000     -1.000000             0.000000      -1.000000         -1.000000            -1.000000       0.000000      0.000000
+25%        2.000000        0.000000           0.000000       0.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     18.000000        1.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           4.000000      14.000000      0.000000              0.000000          -1.000000             -1.000000                -1.000000            -1.000000                   -1.000000            -1.000000         -1.000000          -1.000000                  -1.000000            -1.000000            -1.000000            -1.000000           -1.000000               -1.000000              -1.000000             -1.000000              -1.000000         -1.000000     -1.000000        -1.000000           -1.000000       -1.000000              -1.000000       -1.000000     -1.000000     -1.000000             -1.000000       -1.000000       -1.000000       -1.000000      -1.000000          -1.000000         -1.000000        -1.000000         -1.000000     -1.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.214685      0.000000   13335.000000               -1.000000               -1.000000         1.000000         2.000000        1.000000    288.000000             0.000000       0.000000          0.000000             0.000000       0.000000      0.000000
+50%        2.000000        0.000000           0.000000       1.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     29.000000        2.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           5.000000      17.000000      0.000000              0.000000           0.000000              0.000000                 0.000000             1.000000                    0.000000             0.000000          0.000000           0.000000                   0.000000             0.000000             0.000000             0.000000            0.000000                0.000000               0.000000              0.000000               0.000000          7.000000      0.000000         0.000000            0.000000        0.000000               0.000000        0.000000      0.000000      0.000000              0.000000        0.000000        0.000000        0.000000       0.000000           0.000000          0.000000         0.000000          0.000000      0.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.426263      0.000000   20013.000000             1488.000000              125.000000         1.000000         2.000000        1.000000   1191.000000             1.000000       0.000000          0.000000             0.000000       0.000000      1.000000
+75%        3.000000        0.000000           0.000000       3.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     52.000000        2.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           7.000000      21.000000      0.000000              0.000000           1.000000              0.000000                 0.000000             3.000000                    0.000000             0.000000          0.000000           0.000000                   0.000000             0.000000             0.000000             0.000000            0.000000                0.000000               0.000000              0.000000               0.000000         27.000000      0.000000         0.000000            0.000000        0.000000               0.000000        0.000000      0.000000      0.000000              0.000000        0.000000        0.000000        0.000000       0.000000           0.000000          0.000000         0.000000          0.000000      9.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.853995      0.000000   36351.000000             4754.000000              319.000000         1.000000         4.000000        2.000000   9866.000000             1.000000       1.000000          0.000000             0.000000       0.000000      1.000000
+max       24.000000       35.000000          21.000000      44.000000              9.000000      23.000000     43.000000     26.000000            10.000000       9.000000       5.000000      11.000000     19.000000         60.000000        13.000000       10.000000       174.000000     12.000000   4165.000000       21.000000          11.000000              2.000000               0.0                      0.0               0.0       1.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0          61.000000     231.000000      1.000000              1.000000          19.000000             23.000000                17.000000            22.000000                    0.000000             5.000000         43.000000          26.000000                   9.000000             9.000000             5.000000             5.000000           19.000000               60.000000               0.000000             10.000000             174.000000       1286.000000     12.000000        21.000000           17.000000        0.000000               0.000000        3.000000      2.000000      3.000000              4.000000        9.000000        4.000000        5.000000      19.000000          60.000000          0.000000         0.000000        174.000000   1232.000000       23.000000          35.000000             21.000000         43.000000                 9.000000         23.000000      10.000000       22.000000               10.000000          4.000000          1.000000         11.000000         6.000000             4.000000            0.000000           4.000000           65.000000    4094.000000            1.000000     23.000000      1.000000      38.402411      1.000000  395754.000000            17775.000000            22574.000000        24.000000        16.000000       20.000000  86400.000000             1.000000      17.000000          1.000000             1.000000       1.000000      1.000000
+
+----------------------------------------
+  12. CONSTANT COLUMNS  (zero variance)
+----------------------------------------
+  Count : 13
+  Column                               Constant Value
+  ----------------------------------- ---------------
+  qty_slash_domain                                  0
+  qty_questionmark_domain                           0
+  qty_equal_domain                                  0
+  qty_and_domain                                    0
+  qty_exclamation_domain                            0
+  qty_space_domain                                  0
+  qty_tilde_domain                                  0
+  qty_comma_domain                                  0
+  qty_plus_domain                                   0
+  qty_asterisk_domain                               0
+  qty_hashtag_domain                                0
+  qty_dollar_domain                                 0
+  qty_percent_domain                                0
+
+----------------------------------------
+  13-14. SENTINEL VALUE (-1) COLUMNS
+----------------------------------------
+  Affected columns : 66
+
+  Column                                   Rows w/ −1   Coverage
+  -------------------------------------- ------------ ----------
+  qty_dot_directory                            17,507     29.85 %
+  qty_hyphen_directory                         17,507     29.85 %
+  qty_underline_directory                      17,507     29.85 %
+  qty_slash_directory                          17,507     29.85 %
+  qty_questionmark_directory                   17,507     29.85 %
+  qty_equal_directory                          17,507     29.85 %
+  qty_at_directory                             17,507     29.85 %
+  qty_and_directory                            17,507     29.85 %
+  qty_exclamation_directory                    17,507     29.85 %
+  qty_space_directory                          17,507     29.85 %
+  qty_tilde_directory                          17,507     29.85 %
+  qty_comma_directory                          17,507     29.85 %
+  qty_plus_directory                           17,507     29.85 %
+  qty_asterisk_directory                       17,507     29.85 %
+  qty_hashtag_directory                        17,507     29.85 %
+  qty_dollar_directory                         17,507     29.85 %
+  qty_percent_directory                        17,507     29.85 %
+  directory_length                             17,507     29.85 %
+  qty_dot_file                                 17,507     29.85 %
+  qty_hyphen_file                              17,507     29.85 %
+  qty_underline_file                           17,507     29.85 %
+  qty_slash_file                               17,507     29.85 %
+  qty_questionmark_file                        17,507     29.85 %
+  qty_equal_file                               17,507     29.85 %
+  qty_at_file                                  17,507     29.85 %
+  qty_and_file                                 17,507     29.85 %
+  qty_exclamation_file                         17,507     29.85 %
+  qty_space_file                               17,507     29.85 %
+  qty_tilde_file                               17,507     29.85 %
+  qty_comma_file                               17,507     29.85 %
+  qty_plus_file                                17,507     29.85 %
+  qty_asterisk_file                            17,507     29.85 %
+  qty_hashtag_file                             17,507     29.85 %
+  qty_dollar_file                              17,507     29.85 %
+  qty_percent_file                             17,507     29.85 %
+  file_length                                  17,507     29.85 %
+  qty_dot_params                               51,223     87.34 %
+  qty_hyphen_params                            51,223     87.34 %
+  qty_underline_params                         51,223     87.34 %
+  qty_slash_params                             51,223     87.34 %
+  qty_questionmark_params                      51,223     87.34 %
+  qty_equal_params                             51,223     87.34 %
+  qty_at_params                                51,223     87.34 %
+  qty_and_params                               51,223     87.34 %
+  qty_exclamation_params                       51,223     87.34 %
+  qty_space_params                             51,223     87.34 %
+  qty_tilde_params                             51,223     87.34 %
+  qty_comma_params                             51,223     87.34 %
+  qty_plus_params                              51,223     87.34 %
+  qty_asterisk_params                          51,223     87.34 %
+  qty_hashtag_params                           51,223     87.34 %
+  qty_dollar_params                            51,223     87.34 %
+  qty_percent_params                           51,223     87.34 %
+  params_length                                51,223     87.34 %
+  tld_present_params                           51,223     87.34 %
+  qty_params                                   51,223     87.34 %
+  time_response                                 4,925      8.40 %
+  domain_spf                                   11,153     19.02 %
+  asn_ip                                        4,767      8.13 %
+  time_domain_activation                       18,910     32.24 %
+  time_domain_expiration                       20,698     35.29 %
+  qty_ip_resolved                               3,645      6.22 %
+  ttl_hostname                                  3,648      6.22 %
+  qty_redirects                                 5,519      9.41 %
+  url_google_index                                  4      0.01 %
+  domain_google_index                               2      0.00 %
+
+----------------------------------------
+  15. PREPROCESSING RECOMMENDATIONS
+----------------------------------------
+  [01] [CRITICAL] 20 column(s) have >50 % sentinel (-1) coverage (e.g.
+       params-level and directory-level features). Consider: (a)
+       replacing -1 with NaN and imputing, or (b) creating a binary
+       'has_<segment>' indicator column and zeroing the original.
+  [02] [HIGH] 46 column(s) have ≤50 % sentinel (-1) coverage (e.g.
+       time_response, asn_ip, ttl_hostname). Strategy: replace -1
+       with NaN → median imputation, then add a boolean missingness-
+       indicator feature.
+  [03] [HIGH] 13 constant column(s) detected (all values identical). Drop
+       these columns before training — they carry zero predictive
+       information and waste memory.
+  [04] [MEDIUM] 1,240 duplicate row(s) found. Remove duplicates before
+       splitting into train/test sets to avoid data leakage between
+       folds.
+  [05] [INFO] Class balance is acceptable (phishing: 52.3 % / legitimate:
+       47.7 %).  Standard stratified k-fold cross-validation is
+       sufficient.
+  [06] [INFO] No genuine NaN values found.  All missing information is
+       encoded using the sentinel value -1 (see above).
+  [07] [INFO] All features are numeric (int64). Apply MinMaxScaler
+       normalization (scales each feature to the [0, 1] range) as
+       specified by the IEEE paper before training deep learning
+       models.  Tree-based ensembles (Random Forest, XGBoost,
+       LightGBM) do not require scaling and may be trained on the
+       raw feature values.
+
+========================================================================
+  SECTION: FULL DATASET
+========================================================================
+
+----------------------------------------
+  1. SHAPE
+----------------------------------------
+  Rows    : 88,647
+  Columns : 112
+
+----------------------------------------
+  2. COLUMN NAMES  (112 total)
+----------------------------------------
+  qty_dot_url                      qty_hyphen_url                   qty_underline_url                qty_slash_url                 
+  qty_questionmark_url             qty_equal_url                    qty_at_url                       qty_and_url                   
+  qty_exclamation_url              qty_space_url                    qty_tilde_url                    qty_comma_url                 
+  qty_plus_url                     qty_asterisk_url                 qty_hashtag_url                  qty_dollar_url                
+  qty_percent_url                  qty_tld_url                      length_url                       qty_dot_domain                
+  qty_hyphen_domain                qty_underline_domain             qty_slash_domain                 qty_questionmark_domain       
+  qty_equal_domain                 qty_at_domain                    qty_and_domain                   qty_exclamation_domain        
+  qty_space_domain                 qty_tilde_domain                 qty_comma_domain                 qty_plus_domain               
+  qty_asterisk_domain              qty_hashtag_domain               qty_dollar_domain                qty_percent_domain            
+  qty_vowels_domain                domain_length                    domain_in_ip                     server_client_domain          
+  qty_dot_directory                qty_hyphen_directory             qty_underline_directory          qty_slash_directory           
+  qty_questionmark_directory       qty_equal_directory              qty_at_directory                 qty_and_directory             
+  qty_exclamation_directory        qty_space_directory              qty_tilde_directory              qty_comma_directory           
+  qty_plus_directory               qty_asterisk_directory           qty_hashtag_directory            qty_dollar_directory          
+  qty_percent_directory            directory_length                 qty_dot_file                     qty_hyphen_file               
+  qty_underline_file               qty_slash_file                   qty_questionmark_file            qty_equal_file                
+  qty_at_file                      qty_and_file                     qty_exclamation_file             qty_space_file                
+  qty_tilde_file                   qty_comma_file                   qty_plus_file                    qty_asterisk_file             
+  qty_hashtag_file                 qty_dollar_file                  qty_percent_file                 file_length                   
+  qty_dot_params                   qty_hyphen_params                qty_underline_params             qty_slash_params              
+  qty_questionmark_params          qty_equal_params                 qty_at_params                    qty_and_params                
+  qty_exclamation_params           qty_space_params                 qty_tilde_params                 qty_comma_params              
+  qty_plus_params                  qty_asterisk_params              qty_hashtag_params               qty_dollar_params             
+  qty_percent_params               params_length                    tld_present_params               qty_params                    
+  email_in_url                     time_response                    domain_spf                       asn_ip                        
+  time_domain_activation           time_domain_expiration           qty_ip_resolved                  qty_nameservers               
+  qty_mx_servers                   ttl_hostname                     tls_ssl_certificate              qty_redirects                 
+  url_google_index                 domain_google_index              url_shortened                    phishing                      
+
+----------------------------------------
+  3. DATA TYPES
+----------------------------------------
+  Dtype distribution:
+    int64        : 111 column(s)
+    float64      : 1 column(s)
+
+----------------------------------------
+  4. MISSING VALUES  (genuine NaN)
+----------------------------------------
+  ✓  No NaN values found in this dataset.
+     Note: Missing information is encoded as sentinel value −1.
+
+----------------------------------------
+  5. DUPLICATE ROWS
+----------------------------------------
+  Duplicate rows : 1,438  (1.622 %)
+
+----------------------------------------
+  6-8. CLASS DISTRIBUTION
+----------------------------------------
+  Label                     Count   Percentage
+  -------------------- ---------- ------------
+  Legitimate  (0)          58,000       65.43 %
+  Phishing    (1)          30,647       34.57 %
+  -------------------- ---------- ------------
+  TOTAL                    88,647     100.00 %
+
+  Imbalance ratio (min:maj) : 0.5284
+
+----------------------------------------
+  9. MEMORY USAGE
+----------------------------------------
+  75.748 MB  (79,427,844 bytes)
+
+----------------------------------------
+  10. BASIC STATISTICS  (pandas describe)
+----------------------------------------
+
+        qty_dot_url  qty_hyphen_url  qty_underline_url  qty_slash_url  qty_questionmark_url  qty_equal_url    qty_at_url   qty_and_url  qty_exclamation_url  qty_space_url  qty_tilde_url  qty_comma_url  qty_plus_url  qty_asterisk_url  qty_hashtag_url  qty_dollar_url  qty_percent_url   qty_tld_url    length_url  qty_dot_domain  qty_hyphen_domain  qty_underline_domain  qty_slash_domain  qty_questionmark_domain  qty_equal_domain  qty_at_domain  qty_and_domain  qty_exclamation_domain  qty_space_domain  qty_tilde_domain  qty_comma_domain  qty_plus_domain  qty_asterisk_domain  qty_hashtag_domain  qty_dollar_domain  qty_percent_domain  qty_vowels_domain  domain_length  domain_in_ip  server_client_domain  qty_dot_directory  qty_hyphen_directory  qty_underline_directory  qty_slash_directory  qty_questionmark_directory  qty_equal_directory  qty_at_directory  qty_and_directory  qty_exclamation_directory  qty_space_directory  qty_tilde_directory  qty_comma_directory  qty_plus_directory  qty_asterisk_directory  qty_hashtag_directory  qty_dollar_directory  qty_percent_directory  directory_length  qty_dot_file  qty_hyphen_file  qty_underline_file  qty_slash_file  qty_questionmark_file  qty_equal_file   qty_at_file  qty_and_file  qty_exclamation_file  qty_space_file  qty_tilde_file  qty_comma_file  qty_plus_file  qty_asterisk_file  qty_hashtag_file  qty_dollar_file  qty_percent_file   file_length  qty_dot_params  qty_hyphen_params  qty_underline_params  qty_slash_params  qty_questionmark_params  qty_equal_params  qty_at_params  qty_and_params  qty_exclamation_params  qty_space_params  qty_tilde_params  qty_comma_params  qty_plus_params  qty_asterisk_params  qty_hashtag_params  qty_dollar_params  qty_percent_params  params_length  tld_present_params    qty_params  email_in_url  time_response    domain_spf         asn_ip  time_domain_activation  time_domain_expiration  qty_ip_resolved  qty_nameservers  qty_mx_servers   ttl_hostname  tls_ssl_certificate  qty_redirects  url_google_index  domain_google_index  url_shortened      phishing
+count  88647.000000    88647.000000       88647.000000   88647.000000          88647.000000   88647.000000  88647.000000  88647.000000         88647.000000   88647.000000   88647.000000   88647.000000  88647.000000      88647.000000     88647.000000    88647.000000     88647.000000  88647.000000  88647.000000    88647.000000       88647.000000          88647.000000           88647.0                  88647.0           88647.0   88647.000000         88647.0                 88647.0           88647.0           88647.0           88647.0          88647.0              88647.0             88647.0            88647.0             88647.0       88647.000000   88647.000000  88647.000000          88647.000000       88647.000000          88647.000000             88647.000000         88647.000000                88647.000000         88647.000000      88647.000000       88647.000000               88647.000000         88647.000000         88647.000000         88647.000000        88647.000000            88647.000000           88647.000000          88647.000000           88647.000000      88647.000000  88647.000000     88647.000000        88647.000000    88647.000000           88647.000000    88647.000000  88647.000000  88647.000000          88647.000000    88647.000000    88647.000000    88647.000000   88647.000000       88647.000000      88647.000000     88647.000000      88647.000000  88647.000000    88647.000000       88647.000000          88647.000000      88647.000000             88647.000000      88647.000000   88647.000000    88647.000000            88647.000000      88647.000000      88647.000000      88647.000000     88647.000000         88647.000000        88647.000000       88647.000000        88647.000000   88647.000000        88647.000000  88647.000000  88647.000000   88647.000000  88647.000000   88647.000000            88647.000000            88647.000000     88647.000000     88647.000000    88647.000000   88647.000000         88647.000000   88647.000000       88647.00000         88647.000000   88647.000000  88647.000000
+mean       2.191343        0.328810           0.113879       1.281781              0.009329       0.205861      0.022133      0.140885             0.002944       0.001015       0.003226       0.002166      0.002786          0.004535         0.000508        0.001895         0.107505      1.047480     36.347615        1.870622           0.114578              0.000756               0.0                      0.0               0.0       0.000011             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           5.440590      18.560820      0.002267              0.004501          -0.323666             -0.360813                -0.477997             0.713685                   -0.535935            -0.528343         -0.532550          -0.531422                  -0.534310            -0.535145            -0.532765            -0.535224           -0.534863               -0.532235              -0.535935             -0.534626              -0.483457         10.857694     -0.368710        -0.478087           -0.510756       -0.535935              -0.535935       -0.534288     -0.535641     -0.534513             -0.534897       -0.535506       -0.535641       -0.535371      -0.535168          -0.534761         -0.535935        -0.535935         -0.498742      2.743793       -0.811093          -0.878608             -0.862251         -0.888129                -0.907825         -0.727255      -0.898248       -0.788825               -0.915778         -0.916196         -0.916218         -0.914819        -0.914639            -0.916184           -0.916275          -0.915891           -0.862105       5.273185           -0.891739     -0.759744      0.018331       0.793878     -0.017925   31131.152763             3389.676661              352.043250         1.136564         2.772412        1.742428    6159.877514             0.506447       0.343903           0.00141             0.002019       0.005482      0.345720
+std        1.235636        1.119286           0.657767       1.893929              0.112568       0.954272      0.279652      0.924864             0.087341       0.072653       0.078127       0.075968      0.110904          0.301651         0.061655        0.099730         1.722625      0.254755     46.191590        0.705607           0.421957              0.032381               0.0                      0.0               0.0       0.003359             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           2.541244       6.598694      0.047564              0.066939           0.899499              1.101398                 0.682409             2.216137                    0.498710             0.517986          0.551786           0.538253                   0.504044             0.503964             0.508092             0.501220            0.507685                0.578570               0.498710              0.508434               1.530465         24.352634      0.766855         0.800562            0.604840        0.498710               0.498710        0.502970      0.499341      0.501764              0.501018        0.501447        0.499657        0.500872       0.505883           0.545378          0.498710         0.498710          1.439425     13.572252        0.979810           0.633243              0.656253          0.545884                 0.321486          1.111254       0.359587        1.015908                0.282554          0.277624          0.277265          0.288805         0.289532             0.277682            0.276977           0.280142            1.050527      34.937007            0.381593      0.941208      0.134147       1.468417      0.559366   45261.502645             3044.165723              598.264801         0.895146         1.322999        1.706705   11465.583810             0.499961       0.783892           0.05864             0.063250       0.073841      0.475605
+min        1.000000        0.000000           0.000000       0.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      0.000000      4.000000        0.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           0.000000       4.000000      0.000000              0.000000          -1.000000             -1.000000                -1.000000            -1.000000                   -1.000000            -1.000000         -1.000000          -1.000000                  -1.000000            -1.000000            -1.000000            -1.000000           -1.000000               -1.000000              -1.000000             -1.000000              -1.000000         -1.000000     -1.000000        -1.000000           -1.000000       -1.000000              -1.000000       -1.000000     -1.000000     -1.000000             -1.000000       -1.000000       -1.000000       -1.000000      -1.000000          -1.000000         -1.000000        -1.000000         -1.000000     -1.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000      -1.000000     -1.000000      -1.000000               -1.000000               -1.000000        -1.000000         0.000000        0.000000      -1.000000             0.000000      -1.000000          -1.00000            -1.000000       0.000000      0.000000
+25%        2.000000        0.000000           0.000000       0.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     17.000000        1.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           4.000000      14.000000      0.000000              0.000000          -1.000000             -1.000000                -1.000000            -1.000000                   -1.000000            -1.000000         -1.000000          -1.000000                  -1.000000            -1.000000            -1.000000            -1.000000           -1.000000               -1.000000              -1.000000             -1.000000              -1.000000         -1.000000     -1.000000        -1.000000           -1.000000       -1.000000              -1.000000       -1.000000     -1.000000     -1.000000             -1.000000       -1.000000       -1.000000       -1.000000      -1.000000          -1.000000         -1.000000        -1.000000         -1.000000     -1.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.241038      0.000000   13335.000000               -1.000000               -1.000000         1.000000         2.000000        1.000000     292.000000             0.000000       0.000000           0.00000             0.000000       0.000000      0.000000
+50%        2.000000        0.000000           0.000000       0.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     22.000000        2.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           5.000000      18.000000      0.000000              0.000000          -1.000000             -1.000000                -1.000000            -1.000000                   -1.000000            -1.000000         -1.000000          -1.000000                  -1.000000            -1.000000            -1.000000            -1.000000           -1.000000               -1.000000              -1.000000             -1.000000              -1.000000         -1.000000     -1.000000        -1.000000           -1.000000       -1.000000              -1.000000       -1.000000     -1.000000     -1.000000             -1.000000       -1.000000       -1.000000       -1.000000      -1.000000          -1.000000         -1.000000        -1.000000         -1.000000     -1.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.466492      0.000000   20013.000000             3046.000000              168.000000         1.000000         2.000000        1.000000    2029.000000             1.000000       0.000000           0.00000             0.000000       0.000000      0.000000
+75%        2.000000        0.000000           0.000000       2.000000              0.000000       0.000000      0.000000      0.000000             0.000000       0.000000       0.000000       0.000000      0.000000          0.000000         0.000000        0.000000         0.000000      1.000000     38.000000        2.000000           0.000000              0.000000               0.0                      0.0               0.0       0.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0           7.000000      22.000000      0.000000              0.000000           0.000000              0.000000                 0.000000             2.000000                    0.000000             0.000000          0.000000           0.000000                   0.000000             0.000000             0.000000             0.000000            0.000000                0.000000               0.000000              0.000000               0.000000         16.000000      0.000000         0.000000            0.000000        0.000000               0.000000        0.000000      0.000000      0.000000              0.000000        0.000000        0.000000        0.000000       0.000000           0.000000          0.000000         0.000000          0.000000      0.000000       -1.000000          -1.000000             -1.000000         -1.000000                -1.000000         -1.000000      -1.000000       -1.000000               -1.000000         -1.000000         -1.000000         -1.000000        -1.000000            -1.000000           -1.000000          -1.000000           -1.000000      -1.000000           -1.000000     -1.000000      0.000000       0.874495      0.000000   34922.000000             6423.000000              354.000000         1.000000         4.000000        2.000000   10798.000000             1.000000       1.000000           0.00000             0.000000       0.000000      1.000000
+max       24.000000       35.000000          21.000000      44.000000              9.000000      23.000000     43.000000     26.000000            10.000000       9.000000       5.000000      11.000000     19.000000         60.000000        13.000000       10.000000       174.000000     12.000000   4165.000000       21.000000          11.000000              3.000000               0.0                      0.0               0.0       1.000000             0.0                     0.0               0.0               0.0               0.0              0.0                  0.0                 0.0                0.0                 0.0          61.000000     231.000000      1.000000              1.000000          19.000000             23.000000                17.000000            22.000000                    0.000000             5.000000         43.000000          26.000000                   9.000000             9.000000             5.000000             5.000000           19.000000               60.000000               0.000000             10.000000             174.000000       1286.000000     12.000000        21.000000           17.000000        0.000000               0.000000        3.000000      2.000000      3.000000              4.000000        9.000000        4.000000        5.000000      19.000000          60.000000          0.000000         0.000000        174.000000   1232.000000       23.000000          35.000000             21.000000         43.000000                 9.000000         23.000000      10.000000       22.000000               10.000000          4.000000          1.000000         11.000000         6.000000             4.000000            0.000000           4.000000           65.000000    4094.000000            1.000000     23.000000      1.000000      38.402411      1.000000  395754.000000            17775.000000            22574.000000        24.000000        20.000000       20.000000  604800.000000             1.000000      17.000000           1.00000             1.000000       1.000000      1.000000
+
+----------------------------------------
+  12. CONSTANT COLUMNS  (zero variance)
+----------------------------------------
+  Count : 13
+  Column                               Constant Value
+  ----------------------------------- ---------------
+  qty_slash_domain                                  0
+  qty_questionmark_domain                           0
+  qty_equal_domain                                  0
+  qty_and_domain                                    0
+  qty_exclamation_domain                            0
+  qty_space_domain                                  0
+  qty_tilde_domain                                  0
+  qty_comma_domain                                  0
+  qty_plus_domain                                   0
+  qty_asterisk_domain                               0
+  qty_hashtag_domain                                0
+  qty_dollar_domain                                 0
+  qty_percent_domain                                0
+
+----------------------------------------
+  13-14. SENTINEL VALUE (-1) COLUMNS
+----------------------------------------
+  Affected columns : 66
+
+  Column                                   Rows w/ −1   Coverage
+  -------------------------------------- ------------ ----------
+  qty_dot_directory                            47,509     53.59 %
+  qty_hyphen_directory                         47,509     53.59 %
+  qty_underline_directory                      47,509     53.59 %
+  qty_slash_directory                          47,509     53.59 %
+  qty_questionmark_directory                   47,509     53.59 %
+  qty_equal_directory                          47,509     53.59 %
+  qty_at_directory                             47,509     53.59 %
+  qty_and_directory                            47,509     53.59 %
+  qty_exclamation_directory                    47,509     53.59 %
+  qty_space_directory                          47,509     53.59 %
+  qty_tilde_directory                          47,509     53.59 %
+  qty_comma_directory                          47,509     53.59 %
+  qty_plus_directory                           47,509     53.59 %
+  qty_asterisk_directory                       47,509     53.59 %
+  qty_hashtag_directory                        47,509     53.59 %
+  qty_dollar_directory                         47,509     53.59 %
+  qty_percent_directory                        47,509     53.59 %
+  directory_length                             47,509     53.59 %
+  qty_dot_file                                 47,509     53.59 %
+  qty_hyphen_file                              47,509     53.59 %
+  qty_underline_file                           47,509     53.59 %
+  qty_slash_file                               47,509     53.59 %
+  qty_questionmark_file                        47,509     53.59 %
+  qty_equal_file                               47,509     53.59 %
+  qty_at_file                                  47,509     53.59 %
+  qty_and_file                                 47,509     53.59 %
+  qty_exclamation_file                         47,509     53.59 %
+  qty_space_file                               47,509     53.59 %
+  qty_tilde_file                               47,509     53.59 %
+  qty_comma_file                               47,509     53.59 %
+  qty_plus_file                                47,509     53.59 %
+  qty_asterisk_file                            47,509     53.59 %
+  qty_hashtag_file                             47,509     53.59 %
+  qty_dollar_file                              47,509     53.59 %
+  qty_percent_file                             47,509     53.59 %
+  file_length                                  47,509     53.59 %
+  qty_dot_params                               81,225     91.63 %
+  qty_hyphen_params                            81,225     91.63 %
+  qty_underline_params                         81,225     91.63 %
+  qty_slash_params                             81,225     91.63 %
+  qty_questionmark_params                      81,225     91.63 %
+  qty_equal_params                             81,225     91.63 %
+  qty_at_params                                81,225     91.63 %
+  qty_and_params                               81,225     91.63 %
+  qty_exclamation_params                       81,225     91.63 %
+  qty_space_params                             81,225     91.63 %
+  qty_tilde_params                             81,225     91.63 %
+  qty_comma_params                             81,225     91.63 %
+  qty_plus_params                              81,225     91.63 %
+  qty_asterisk_params                          81,225     91.63 %
+  qty_hashtag_params                           81,225     91.63 %
+  qty_dollar_params                            81,225     91.63 %
+  qty_percent_params                           81,225     91.63 %
+  params_length                                81,225     91.63 %
+  tld_present_params                           81,225     91.63 %
+  qty_params                                   81,225     91.63 %
+  time_response                                 5,860      6.61 %
+  domain_spf                                   14,677     16.56 %
+  asn_ip                                        6,473      7.30 %
+  time_domain_activation                       24,354     27.47 %
+  time_domain_expiration                       26,210     29.57 %
+  qty_ip_resolved                               4,453      5.02 %
+  ttl_hostname                                  4,454      5.02 %
+  qty_redirects                                 6,949      7.84 %
+  url_google_index                                 90      0.10 %
+  domain_google_index                              88      0.10 %
+
+----------------------------------------
+  15. PREPROCESSING RECOMMENDATIONS
+----------------------------------------
+  [01] [CRITICAL] 56 column(s) have >50 % sentinel (-1) coverage (e.g.
+       params-level and directory-level features). Consider: (a)
+       replacing -1 with NaN and imputing, or (b) creating a binary
+       'has_<segment>' indicator column and zeroing the original.
+  [02] [HIGH] 10 column(s) have ≤50 % sentinel (-1) coverage (e.g.
+       time_response, asn_ip, ttl_hostname). Strategy: replace -1
+       with NaN → median imputation, then add a boolean missingness-
+       indicator feature.
+  [03] [HIGH] 13 constant column(s) detected (all values identical). Drop
+       these columns before training — they carry zero predictive
+       information and waste memory.
+  [04] [MEDIUM] 1,438 duplicate row(s) found. Remove duplicates before
+       splitting into train/test sets to avoid data leakage between
+       folds.
+  [05] [MEDIUM] Class imbalance detected (minority class: 34.6 %). Consider
+       SMOTE oversampling or class-weight adjustment during model
+       training.  Evaluation should prioritise F1-score and AUC-ROC,
+       not raw accuracy.
+  [06] [INFO] No genuine NaN values found.  All missing information is
+       encoded using the sentinel value -1 (see above).
+  [07] [INFO] All features are numeric (int64). Apply MinMaxScaler
+       normalization (scales each feature to the [0, 1] range) as
+       specified by the IEEE paper before training deep learning
+       models.  Tree-based ensembles (Random Forest, XGBoost,
+       LightGBM) do not require scaling and may be trained on the
+       raw feature values.
+
+========================================================================
+  SECTION: CROSS-DATASET SCHEMA COMPARISON
+========================================================================
+
+  Schemas identical (column names + order) : True
+  Same column set (unordered)              : True
+  Dtype mismatches                         : 0
+
+  Row delta (full − small)   : +30,002 rows
+  Row scale factor           :  1.512×
+  Phishing % delta           :  -17.69 pp
+  Legitimate % delta         :  +17.69 pp
+  Constant cols agree        :  True
+  Sentinel cols agree        :  True
+
+========================================================================
+  IEEE-STYLE DATASET CHARACTERISATION AND PREPROCESSING ROADMAP
+========================================================================
+
+ABSTRACT - DATASET CHARACTERISATION
+-------------------------------------------------------------------------
+This study employs two variants of a URL-based phishing detection
+dataset, both derived from the same feature-extraction pipeline and
+sharing an identical schema of 112 features.
+
+The small dataset (D_S) comprises 58,645 labelled instances
+(30,647 phishing, 27,998 legitimate),
+representing a class imbalance ratio of 0.9136 (minority
+to majority).  The full dataset (D_F) extends D_S by 30,002
+additional records, yielding 88,647 instances in total
+(30,647 phishing, 58,000 legitimate)
+at a scale factor of 1.512× relative to D_S.
+
+All 112 features are integer-typed (int64), encoding
+lexical URL characteristics (URL segment lengths, special-character
+counts), domain-level attributes (IP-based domain, SPF record,
+ASN identifier), and external service signals (DNS resolution,
+Google index status, TLS certificate presence).  The binary target
+variable 'phishing' takes value 1 for malicious URLs and 0 for
+benign ones.
+
+MISSING DATA AND SENTINEL VALUES
+-------------------------------------------------------------------------
+Neither dataset contains genuine NaN entries.  Instead, the dataset
+authors encode structural absence — e.g. a URL lacking a query
+string or file component — using the sentinel value −1.  In D_S,
+66 of 112 features carry at least one sentinel
+occurrence; in D_F, 66 features are affected.  Notably,
+all 20 directory-level and file-level character-count features
+exhibit sentinel coverage exceeding 29 % in D_S and 53 % in D_F,
+while all 20 query-parameter features exceed 87 % sentinel coverage
+in both datasets, reflecting the high proportion of URLs that lack
+these structural components.
+
+ZERO-VARIANCE (CONSTANT) FEATURES
+-------------------------------------------------------------------------
+13 features exhibit zero variance across both datasets:
+qty_slash_domain, qty_questionmark_domain, qty_equal_domain, qty_and_domain (and 9 more).
+These columns hold a single value (typically 0) for every record
+and convey no discriminative information; they will be dropped
+during the preprocessing phase.
+
+PREPROCESSING PIPELINE - PHASE 2 OVERVIEW
+-------------------------------------------------------------------------
+The following preprocessing steps will be implemented in
+utils/preprocessor.py (Phase 2) based on the findings above:
+
+Step 1  — DROP CONSTANT COLUMNS
+          Remove all 13 zero-variance features identified
+          in this analysis.  Reduces the feature space from
+          112 to 99 input dimensions.
+
+Step 2  — SENTINEL IMPUTATION (directory / file / params features)
+          For features with ≥ 50 % sentinel coverage: replace −1
+          with 0 and create a companion boolean indicator feature
+          'has_<segment>' (e.g. 'has_directory', 'has_file',
+          'has_params') that flags whether the URL segment was
+          present.  This preserves structural information without
+          inflating the feature mean.
+
+Step 3  — SENTINEL IMPUTATION (network / DNS features)
+          For features with < 50 % sentinel coverage
+          (time_response, asn_ip, ttl_hostname, domain_spf,
+          time_domain_activation, time_domain_expiration,
+          qty_ip_resolved, qty_redirects): replace −1 with the
+          column median computed exclusively on non-sentinel rows,
+          then add a binary missingness-indicator feature.
+
+Step 4  — DUPLICATE REMOVAL
+          Remove exact duplicate rows identified in this analysis
+          to prevent data leakage across cross-validation folds.
+
+Step 5  — STRATIFIED TRAIN / VALIDATION / TEST SPLIT
+          Partition each dataset into 70 % training, 15 %
+          validation, and 15 % test subsets using stratified
+          sampling to preserve class proportions in each split.
+
+Step 6  - FEATURE SCALING (MinMaxScaler — IEEE paper specification)
+          Apply MinMaxScaler normalization, which linearly scales each
+          numerical feature to the [0, 1] range, as specified by the
+          IEEE paper prior to training deep learning models.  This
+          normalization is applied after sentinel imputation and
+          duplicate removal, and is fitted exclusively on the training
+          split to prevent data leakage.  Tree-based ensembles
+          (Random Forest, XGBoost, LightGBM) are trained on the
+          original (unscaled) feature values.
+
+Step 7  — CLASS-IMBALANCE HANDLING (if required)
+          Evaluate SMOTE oversampling on the training set only.
+          Prioritise F1-macro and AUC-ROC as primary evaluation
+          metrics rather than raw accuracy.
+
+All preprocessing artefacts (scalers, imputer statistics) will be
+serialised with joblib and stored in models/saved/ to ensure
+identical transformation is applied at inference time.
+-------------------------------------------------------------------------
+END OF REPORT
