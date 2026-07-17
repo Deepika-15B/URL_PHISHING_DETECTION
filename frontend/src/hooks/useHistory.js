@@ -1,0 +1,2 @@
+﻿import {useEffect,useState} from 'react'; const K='phishing-history'; export function useHistory(){const [items,setItems]=useState(()=>JSON.parse(localStorage.getItem(K)||'[]'));useEffect(()=>localStorage.setItem(K,JSON.stringify(items)),[items]);return{items,add:x=>setItems(v=>[{...x,id:crypto.randomUUID(),date:new Date().toISOString()},...v]),remove:id=>setItems(v=>v.filter(x=>x.id!==id)),clear:()=>setItems([])}}
+
