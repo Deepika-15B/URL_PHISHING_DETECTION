@@ -1,0 +1,44 @@
+FEATURE PARITY VALIDATION REPORT
+============================================================
+Target URL                  : https://kongu.ac.in
+
+--- Domain Extraction ---
+Registered Domain (tldextract): kongu
+Page Title                    : kec | kongu engineering college
+
+--- URLSimilarityIndex ---
+  PREVIOUS (binary * 100)     : 100
+  NEW (continuous fuzzy 0-100): 100.0
+  Change                      : +0.00
+
+--- DomainTitleMatchScore ---
+  PREVIOUS (binary * 100)     : 100
+  NEW (continuous fuzzy 0-100): 100.0
+  Change                      : +0.00
+
+--- Scaled Feature Values (all 20) ---
+  URLSimilarityIndex                  raw=  100.0000  scaled=  0.7394  z=  +0.74
+  NoOfExternalRef                     raw=    0.0000  scaled= -0.3437  z=  -0.34
+  LineOfCode                          raw=  536.0000  scaled= -0.1756  z=  -0.18
+  NoOfSelfRef                         raw=    0.0000  scaled= -0.4080  z=  -0.41
+  IsHTTPS                             raw=    1.0000  scaled=  0.5281  z=  +0.53
+  NoOfImage                           raw=    1.0000  scaled= -0.3263  z=  -0.33
+  NoOfJS                              raw=    3.0000  scaled= -0.3106  z=  -0.31
+  HasSocialNet                        raw=    0.0000  scaled= -0.9209  z=  -0.92
+  NoOfCSS                             raw=    6.0000  scaled= -0.0048  z=  -0.00
+  HasCopyrightInfo                    raw=    0.0000  scaled= -0.9785  z=  -0.98
+  NoOfOtherSpecialCharsInURL          raw=    0.0000  scaled= -0.6803  z=  -0.68
+  LargestLineLength                   raw= 5000.0000  scaled= -0.0491  z=  -0.05
+  HasDescription                      raw=    1.0000  scaled=  1.1240  z=  +1.12
+  NoOfDegitsInURL                     raw=    0.0000  scaled= -0.1660  z=  -0.17
+  URLLength                           raw=   19.0000  scaled= -0.4143  z=  -0.41
+  IsResponsive                        raw=    1.0000  scaled=  0.7761  z=  +0.78
+  DegitRatioInURL                     raw=    0.0000  scaled= -0.4011  z=  -0.40
+  DomainTitleMatchScore               raw=  100.0000  scaled=  1.0009  z=  +1.00
+  SpacialCharRatioInURL               raw=    0.0000  scaled= -1.9526  z=  -1.95
+  HasSubmitButton                     raw=    0.0000  scaled= -0.8447  z=  -0.84
+
+--- Final Prediction ---
+  Raw FNN sigmoid output  : 0.99980289
+  Phishing probability    : 0.0002
+  Prediction              : Legitimate

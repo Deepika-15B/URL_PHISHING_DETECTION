@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import pickle
 import random
+import re
 import time
 from datetime import datetime
 from io import StringIO
@@ -48,6 +49,7 @@ _RANDOM_STATE = 42
 
 _MODEL_PATH = _MODELS_DIR / "fnn_model.keras"
 _HISTORY_PATH = _MODELS_DIR / "training_history.pkl"
+_TUNING_REPORT_PATH = _REPORTS_DIR / "hyperparameter_tuning_report.txt"
 
 
 def load_training_data(
@@ -94,15 +96,15 @@ def build_model(input_dimension: int) -> tf.keras.Model:
         [
             tf.keras.layers.Input(shape=(input_dimension,), name="selected_features"),
             tf.keras.layers.Dense(64, activation="relu", name="dense_64"),
-            tf.keras.layers.Dropout(0.30, name="dropout_64"),
+            tf.keras.layers.Dropout(0.20, name="dropout_64"),
             tf.keras.layers.Dense(32, activation="relu", name="dense_32"),
-            tf.keras.layers.Dropout(0.30, name="dropout_32"),
+            tf.keras.layers.Dropout(0.20, name="dropout_32"),
             tf.keras.layers.Dense(1, activation="sigmoid", name="phishing_probability"),
         ],
         name="ieee_phishing_fnn",
     )
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=[
             tf.keras.metrics.BinaryAccuracy(name="accuracy"),
@@ -120,10 +122,13 @@ def train_model(
     y_train: pd.Series,
     x_validation: pd.DataFrame,
     y_validation: pd.Series,
-) -> tuple[tf.keras.callbacks.History, float, bool]:
-    """Train once with the specified epochs, batch size, and EarlyStopping."""
+) -> tuple[tf.keras.callbacks.History, float, bool, bool]:
+    """Train once with the tuned configuration and requested callbacks."""
     early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", patience=5, restore_best_weights=True
+        monitor="val_loss", patience=8, restore_best_weights=True
+    )
+    reduce_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(
+        monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1
     )
     start_time = time.perf_counter()
 
@@ -133,14 +138,16 @@ def train_model(
         x_train,
         y_train,
         validation_data=(x_validation, y_validation),
-        epochs=40,
+        epochs=100,
         batch_size=32,
-        callbacks=[early_stopping],
+        callbacks=[early_stopping, reduce_learning_rate],
         verbose=2,
     )
     elapsed_seconds = time.perf_counter() - start_time
-    early_stopped = len(history.history["loss"]) < 40
-    return history, elapsed_seconds, early_stopped
+    early_stopped = len(history.history["loss"]) < 100
+    learning_rates = history.history.get("learning_rate", history.history.get("lr", []))
+    reduce_lr_activated = bool(learning_rates and min(learning_rates) < 0.0005)
+    return history, elapsed_seconds, early_stopped, reduce_lr_activated
 
 
 def evaluate_model(
@@ -273,10 +280,11 @@ MODEL ARCHITECTURE
 {architecture}
 Trainable parameters: {model.count_params():,}
 Loss: Binary Crossentropy
-Optimizer: Adam (learning_rate=0.001)
+Optimizer: Adam (learning_rate=0.0005)
 Metrics: Accuracy, Precision, Recall, AUC
-Training configuration: epochs=40, batch_size=32
-Early stopping: monitor=val_loss, patience=5, restore_best_weights=True
+Training configuration: epochs=100, batch_size=32
+Early stopping: monitor=val_loss, patience=8, restore_best_weights=True
+ReduceLROnPlateau: monitor=val_loss, factor=0.5, patience=3, min_lr=1e-6, verbose=1
 Early stopping triggered: {early_stopped}
 Epochs completed: {len(history.history['loss'])}
 Training time: {training_seconds:.2f} seconds
@@ -303,12 +311,60 @@ history, and reports are ready for the next inference-pipeline phase.
     print("Training reports generated.")
 
 
+def _load_previous_metrics() -> dict[str, float]:
+    """Read the baseline validation metrics before replacing the training report."""
+    if not (_REPORTS_DIR / "training_report.txt").exists():
+        raise FileNotFoundError("Previous training report is required for tuning comparison.")
+    baseline = (_REPORTS_DIR / "training_report.txt").read_text(encoding="utf-8")
+    labels = {
+        "accuracy": "Accuracy",
+        "precision": "Precision",
+        "recall": "Recall",
+        "f1_score": "F1 Score",
+        "roc_auc": "ROC AUC",
+    }
+    metrics = {}
+    for key, label in labels.items():
+        match = re.search(rf"^{re.escape(label)}: ([0-9.]+)$", baseline, re.MULTILINE)
+        if not match:
+            raise ValueError(f"Previous {label} is missing from training_report.txt.")
+        metrics[key] = float(match.group(1))
+    return metrics
+
+
+def _write_tuning_report(
+    previous: dict[str, float], metrics: dict[str, Any], epochs_trained: int,
+    reduce_lr_activated: bool, early_stopped: bool,
+) -> None:
+    recommendation = "Keep the tuned model: validation accuracy improved." if metrics["accuracy"] > previous["accuracy"] else "Do not keep the tuned model: validation accuracy did not improve."
+    report = f"""IEEE PHISHING DETECTION - HYPERPARAMETER TUNING REPORT
+
+Previous Accuracy: {previous['accuracy']:.6f}
+New Accuracy: {metrics['accuracy']:.6f}
+Previous Precision: {previous['precision']:.6f}
+New Precision: {metrics['precision']:.6f}
+Previous Recall: {previous['recall']:.6f}
+New Recall: {metrics['recall']:.6f}
+Previous F1: {previous['f1_score']:.6f}
+New F1: {metrics['f1_score']:.6f}
+Previous ROC-AUC: {previous['roc_auc']:.6f}
+New ROC-AUC: {metrics['roc_auc']:.6f}
+Number of epochs actually trained: {epochs_trained}
+ReduceLROnPlateau activated: {reduce_lr_activated}
+EarlyStopping triggered: {early_stopped}
+
+Final recommendation: {recommendation}
+"""
+    _TUNING_REPORT_PATH.write_text(report, encoding="utf-8")
+
 def train_fnn() -> dict[str, Any]:
     """Execute one complete, reproducible FNN train/evaluate/save workflow."""
     # Seed Python, NumPy, and TensorFlow before splitting/building/training.
     random.seed(_RANDOM_STATE)
     np.random.seed(_RANDOM_STATE)
     tf.keras.utils.set_random_seed(_RANDOM_STATE)
+
+    previous_metrics = _load_previous_metrics()
 
     features, target, selected_features = load_training_data()
     x_train, x_validation, y_train, y_validation = train_test_split(
@@ -317,7 +373,7 @@ def train_fnn() -> dict[str, Any]:
 
     model = build_model(input_dimension=len(selected_features))
     print("FNN model built.")
-    history, training_seconds, early_stopped = train_model(
+    history, training_seconds, early_stopped, reduce_lr_activated = train_model(
         model, x_train, y_train, x_validation, y_validation
     )
     print("Training completed.")
@@ -328,13 +384,17 @@ def train_fnn() -> dict[str, Any]:
         model, history, metrics, len(features), len(x_train), len(x_validation),
         selected_features, training_seconds, early_stopped
     )
+    _write_tuning_report(
+        previous_metrics, metrics, len(history.history["loss"]),
+        reduce_lr_activated, early_stopped
+    )
 
     # Final verification ensures the exact requested deliverables exist.
     required_artifacts = [_MODEL_PATH, _HISTORY_PATH] + [
         _REPORTS_DIR / name for name in (
             "training_accuracy.png", "training_loss.png", "confusion_matrix.png",
             "roc_curve.png", "classification_report.txt", "model_summary.txt",
-            "training_report.txt",
+            "training_report.txt", "hyperparameter_tuning_report.txt",
         )
     ]
     if not all(path.exists() for path in required_artifacts):
@@ -354,3 +414,7 @@ def train_fnn() -> dict[str, Any]:
 
 if __name__ == "__main__":
     train_fnn()
+
+
+
+

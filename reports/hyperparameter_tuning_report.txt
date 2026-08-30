@@ -1,0 +1,17 @@
+IEEE PHISHING DETECTION - HYPERPARAMETER TUNING REPORT
+
+Previous Accuracy: 0.920303
+New Accuracy: 0.926226
+Previous Precision: 0.923668
+New Precision: 0.927409
+Previous Recall: 0.926545
+New Recall: 0.934252
+Previous F1: 0.925104
+New F1: 0.930818
+Previous ROC-AUC: 0.975056
+New ROC-AUC: 0.976786
+Number of epochs actually trained: 97
+ReduceLROnPlateau activated: True
+EarlyStopping triggered: True
+
+Final recommendation: Keep the tuned model: validation accuracy improved.

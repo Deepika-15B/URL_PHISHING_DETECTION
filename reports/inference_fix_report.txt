@@ -1,0 +1,839 @@
+================================================================================
+IEEE PHISHING DETECTION - INFERENCE FIX VERIFICATION REPORT
+================================================================================
+Timestamp      : 2026-08-01 10:05:55
+Models dir     : E:\phishing_project_ieee\phishing_detection_ieee\models
+Screenshots dir: E:\phishing_project_ieee\phishing_detection_ieee\reports\screenshots
+Alias map      : E:\phishing_project_ieee\phishing_detection_ieee\models\feature_alias_map.json
+
+============================================================
+ARTIFACT LOADING
+============================================================
+  fnn_phase2_v2.keras  : LOADED  (input_shape=(None, 20))
+  scaler_phase2_v2.pkl : LOADED  (type=StandardScaler, n_features=20)
+  top20_features.pkl   : LOADED  (20 features)
+  feature_alias_map    : LOADED  (20 entries)
+
+  Top20 feature names (from top20_features.pkl):
+    URLSimilarityIndex
+    NoOfExternalRef
+    LineOfCode
+    NoOfSelfRef
+    IsHTTPS
+    NoOfImage
+    NoOfJS
+    HasSocialNet
+    NoOfCSS
+    HasCopyrightInfo
+    NoOfOtherSpecialCharsInURL
+    LargestLineLength
+    HasDescription
+    NoOfDegitsInURL
+    URLLength
+    IsResponsive
+    DegitRatioInURL
+    DomainTitleMatchScore
+    SpacialCharRatioInURL
+    HasSubmitButton
+
+  Alias map entries (from feature_alias_map.json):
+    NoOfExternalRef: {'type': 'key', 'key': 'num_external_links'}
+    NoOfSelfRef: {'type': 'key', 'key': 'num_internal_links'}
+    NoOfImage: {'type': 'key', 'key': 'number_of_images'}
+    NoOfJS: {'type': 'key', 'key': 'number_of_javascript_files'}
+    NoOfCSS: {'type': 'key', 'key': 'number_of_css_files'}
+    URLLength: {'type': 'url_len'}
+    IsHTTPS: {'type': 'url_https'}
+    NoOfDegitsInURL: {'type': 'url_digit_count'}
+    DegitRatioInURL: {'type': 'url_digit_ratio'}
+    SpacialCharRatioInURL: {'type': 'url_special_ratio'}
+    NoOfOtherSpecialCharsInURL: {'type': 'url_special_count'}
+    HasSubmitButton: {'type': 'key_gt0', 'key': 'num_submit_inputs'}
+    HasDescription: {'type': 'html_diag_nonempty', 'key': 'meta_description'}
+    URLSimilarityIndex: {'type': 'key_pct', 'key': 'title_matches_domain', '_note': 'PHIUSIIL range is 0-100. title_matches_domain is binary 0/1; multiply by 100 to match scale. Mean=78.6 => HTTPS + matching title => score near 100.'}
+    DomainTitleMatchScore: {'type': 'key_pct', 'key': 'title_matches_domain', '_note': 'PHIUSIIL range is 0-100. Binary title_matches_domain * 100 approximates this score. Mean=50.3.'}
+    LineOfCode: {'type': 'dom_to_loc', 'key': 'num_total_dom_elements', '_note': 'PHIUSIIL LineOfCode = actual HTML source line count (mean=1145). We approximate: num_total_dom_elements * 8 (avg 8 HTML lines per DOM element). This gives a range similar to the training distribution.'}
+    HasSocialNet: {'type': 'key_gt', 'key': 'num_external_links', 'threshold': 3, '_note': 'Binary. Legitimate sites with social share buttons typically have >= 4 external links. Mean=0.459.'}
+    HasCopyrightInfo: {'type': 'const', 'value': 0, '_note': 'Binary. Cannot be determined from available extractors (requires text mining for copyright symbol/text). Using 0 as conservative fallback. Mean=0.489.'}
+    LargestLineLength: {'type': 'const', 'value': 5000, '_note': 'PHIUSIIL mean=12980 chars, std=162579 (extremely high variance). Using 5000 as a neutral middle-ground for typical legitimate pages. True computation requires raw HTML source.'}
+    IsResponsive: {'type': 'const', 'value': 1, '_note': 'Binary. Mean=0.624 in training data. Most modern pages are responsive. Defaulting to 1 (responsive) is statistically safer than 0. Cannot detect without viewport meta parsing.'}
+
+================================================================================
+TEST URL: https://www.google.com
+================================================================================
+
+------------------------------------------------------------
+BUG 2 FIX: SCREENSHOT CAPTURE
+------------------------------------------------------------
+  Screenshot path   : /reports/screenshots/google.com_20260801_100610.png
+  Screenshot saved  : True
+  File size         : 27.7 KB
+
+------------------------------------------------------------
+EXTRACTED URL FEATURE KEYS (101)
+------------------------------------------------------------
+  asn_ip: 15169
+  directory_length: 0
+  domain_google_index: 0
+  domain_in_ip: 0
+  domain_length: 14
+  domain_spf: 0
+  email_in_url: 0
+  file_length: 0
+  has_directory: 0
+  has_file: 0
+  has_params: 0
+  length_url: 22
+  params_length: 0
+  qty_and_directory: 0
+  qty_and_file: 0
+  qty_and_params: 0
+  qty_and_url: 0
+  qty_asterisk_directory: 0
+  qty_asterisk_file: 0
+  qty_asterisk_params: 0
+  qty_asterisk_url: 0
+  qty_at_directory: 0
+  qty_at_domain: 0
+  qty_at_file: 0
+  qty_at_params: 0
+  qty_at_url: 0
+  qty_comma_directory: 0
+  qty_comma_file: 0
+  qty_comma_params: 0
+  qty_comma_url: 0
+  qty_dollar_directory: 0
+  qty_dollar_file: 0
+  qty_dollar_params: 0
+  qty_dollar_url: 0
+  qty_dot_directory: 0
+  qty_dot_domain: 2
+  qty_dot_file: 0
+  qty_dot_params: 0
+  qty_dot_url: 2
+  qty_equal_directory: 0
+  qty_equal_file: 0
+  qty_equal_params: 0
+  qty_equal_url: 0
+  qty_exclamation_directory: 0
+  qty_exclamation_file: 0
+  qty_exclamation_params: 0
+  qty_exclamation_url: 0
+  qty_hashtag_directory: 0
+  qty_hashtag_file: 0
+  qty_hashtag_params: 0
+  qty_hashtag_url: 0
+  qty_hyphen_directory: 0
+  qty_hyphen_domain: 0
+  qty_hyphen_file: 0
+  qty_hyphen_params: 0
+  qty_hyphen_url: 0
+  qty_ip_resolved: 8
+  qty_mx_servers: 0
+  qty_nameservers: 0
+  qty_params: 0
+  qty_percent_directory: 0
+  qty_percent_file: 0
+  qty_percent_params: 0
+  qty_percent_url: 0
+  qty_plus_directory: 0
+  qty_plus_file: 0
+  qty_plus_params: 0
+  qty_plus_url: 0
+  qty_questionmark_directory: 0
+  qty_questionmark_file: 0
+  qty_questionmark_params: 0
+  qty_questionmark_url: 0
+  qty_redirects: 0
+  qty_slash_directory: 0
+  qty_slash_file: 0
+  qty_slash_params: 0
+  qty_slash_url: 2
+  qty_space_directory: 0
+  qty_space_file: 0
+  qty_space_params: 0
+  qty_space_url: 0
+  qty_tilde_directory: 0
+  qty_tilde_file: 0
+  qty_tilde_params: 0
+  qty_tilde_url: 0
+  qty_tld_url: 1
+  qty_underline_directory: 0
+  qty_underline_domain: 0
+  qty_underline_file: 0
+  qty_underline_params: 0
+  qty_underline_url: 0
+  qty_vowels_domain: 4
+  server_client_domain: 0
+  time_domain_activation: 0
+  time_domain_expiration: 0
+  time_response: 0.229367
+  tld_present_params: 0
+  tls_ssl_certificate: 1
+  ttl_hostname: 185
+  url_google_index: 0
+  url_shortened: 0
+
+------------------------------------------------------------
+EXTRACTED HTML FEATURE KEYS (35)
+------------------------------------------------------------
+  dom_depth: 20
+  has_empty_or_blank_action: 0
+  has_external_action_password_form: 0
+  has_external_favicon: 1
+  has_external_form_action: 0
+  has_meta_refresh: 0
+  has_mismatch_link_text: 0
+  has_obfuscated_js: 0
+  has_popup_script: 0
+  has_relative_form_action: 1
+  has_right_click_disabled: 0
+  has_text_selection_disabled: 1
+  num_external_links: 2
+  num_forms: 1
+  num_hidden_iframes: 0
+  num_hidden_inputs: 4
+  num_iframes: 0
+  num_internal_links: 23
+  num_links: 25
+  num_meta_tags: 2
+  num_null_self_links: 0
+  num_password_inputs: 0
+  num_submit_inputs: 5
+  num_suspicious_anchor_text: 0
+  num_text_inputs: 0
+  num_total_dom_elements: 337
+  number_of_css_files: 2
+  number_of_forms: 1
+  number_of_hyperlinks: 25
+  number_of_images: 6
+  number_of_javascript_files: 8
+  ratio_external_links: 0.08
+  ratio_internal_links: 0.92
+  ratio_null_self_links: 0.0
+  title_matches_domain: 1
+
+------------------------------------------------------------
+NORMALIZATION CANONICAL FORMS (top20 features)
+------------------------------------------------------------
+  'URLSimilarityIndex' -> 'urlsimilarityindex'
+  'NoOfExternalRef' -> 'noofexternalref'
+  'LineOfCode' -> 'lineofcode'
+  'NoOfSelfRef' -> 'noofselfref'
+  'IsHTTPS' -> 'ishttps'
+  'NoOfImage' -> 'noofimage'
+  'NoOfJS' -> 'noofjs'
+  'HasSocialNet' -> 'hassocialnet'
+  'NoOfCSS' -> 'noofcss'
+  'HasCopyrightInfo' -> 'hascopyrightinfo'
+  'NoOfOtherSpecialCharsInURL' -> 'noofotherspecialcharsinurl'
+  'LargestLineLength' -> 'largestlinelength'
+  'HasDescription' -> 'hasdescription'
+  'NoOfDegitsInURL' -> 'noofdegitsinurl'
+  'URLLength' -> 'urllength'
+  'IsResponsive' -> 'isresponsive'
+  'DegitRatioInURL' -> 'degitratioinurl'
+  'DomainTitleMatchScore' -> 'domaintitlematchscore'
+  'SpacialCharRatioInURL' -> 'spacialcharratioinurl'
+  'HasSubmitButton' -> 'hassubmitbutton'
+
+------------------------------------------------------------
+BUG 1 FIX: FEATURE MAPPING (3 passes)
+------------------------------------------------------------
+  Matched Features : 20/20
+  Missing Features : 0/20
+
+------------------------------------------------------------
+FEATURE VALUES BEFORE SCALING
+------------------------------------------------------------
+  DataFrame shape : (1, 20)
+  Any NaN         : False
+  All zeros       : False
+
+  URLSimilarityIndex                  = 100.0
+  NoOfExternalRef                     = 2.0
+  LineOfCode                          = 2696.0
+  NoOfSelfRef                         = 23.0
+  IsHTTPS                             = 1.0
+  NoOfImage                           = 6.0
+  NoOfJS                              = 8.0
+  HasSocialNet                        = 0.0
+  NoOfCSS                             = 2.0
+  HasCopyrightInfo                    = 0.0
+  NoOfOtherSpecialCharsInURL          = 0.0
+  LargestLineLength                   = 5000.0
+  HasDescription                      = 0.0
+  NoOfDegitsInURL                     = 0.0
+  URLLength                           = 22.0
+  IsResponsive                        = 1.0
+  DegitRatioInURL                     = 0.0
+  DomainTitleMatchScore               = 100.0
+  SpacialCharRatioInURL               = 0.0
+  HasSubmitButton                     = 1.0
+
+------------------------------------------------------------
+FEATURE VALUES AFTER SCALING
+------------------------------------------------------------
+  Scaled shape : (1, 20)
+  URLSimilarityIndex                  = 0.739369
+  NoOfExternalRef                     = -0.329751
+  LineOfCode                          = 0.446680
+  NoOfSelfRef                         = -0.263978
+  IsHTTPS                             = 0.528109
+  NoOfImage                           = -0.261065
+  NoOfJS                              = -0.105958
+  HasSocialNet                        = -0.920853
+  NoOfCSS                             = -0.049536
+  HasCopyrightInfo                    = -0.978453
+  NoOfOtherSpecialCharsInURL          = -0.680331
+  LargestLineLength                   = -0.049082
+  HasDescription                      = -0.889692
+  NoOfDegitsInURL                     = -0.166012
+  URLLength                           = -0.333745
+  IsResponsive                        = 0.776140
+  DegitRatioInURL                     = -0.401068
+  DomainTitleMatchScore               = 1.000926
+  SpacialCharRatioInURL               = -1.952641
+  HasSubmitButton                     = 1.183841
+
+------------------------------------------------------------
+RAW MODEL OUTPUT
+------------------------------------------------------------
+  Raw probability (sigmoid) : 0.999984
+  Phishing probability      : 0.000016
+  Threshold applied         : raw_prob >= 0.5 -> Legitimate, else -> Phishing
+
+------------------------------------------------------------
+FINAL PREDICTION
+------------------------------------------------------------
+  Prediction   : Legitimate
+  Confidence   : 100.0%
+  Threat Score : 0.0
+  Risk Level   : Low
+
+------------------------------------------------------------
+SCREENSHOT SUMMARY
+------------------------------------------------------------
+  Screenshot path    : /reports/screenshots/google.com_20260801_100610.png
+  Screenshot saved   : True
+  File size          : 27.7 KB
+
+================================================================================
+TEST URL: https://github.com
+================================================================================
+
+------------------------------------------------------------
+BUG 2 FIX: SCREENSHOT CAPTURE
+------------------------------------------------------------
+  Screenshot path   : /reports/screenshots/github.com_20260801_100628.png
+  Screenshot saved  : True
+  File size         : 198.5 KB
+
+------------------------------------------------------------
+EXTRACTED URL FEATURE KEYS (101)
+------------------------------------------------------------
+  asn_ip: 8075
+  directory_length: 0
+  domain_google_index: 0
+  domain_in_ip: 0
+  domain_length: 10
+  domain_spf: 1
+  email_in_url: 0
+  file_length: 0
+  has_directory: 0
+  has_file: 0
+  has_params: 0
+  length_url: 18
+  params_length: 0
+  qty_and_directory: 0
+  qty_and_file: 0
+  qty_and_params: 0
+  qty_and_url: 0
+  qty_asterisk_directory: 0
+  qty_asterisk_file: 0
+  qty_asterisk_params: 0
+  qty_asterisk_url: 0
+  qty_at_directory: 0
+  qty_at_domain: 0
+  qty_at_file: 0
+  qty_at_params: 0
+  qty_at_url: 0
+  qty_comma_directory: 0
+  qty_comma_file: 0
+  qty_comma_params: 0
+  qty_comma_url: 0
+  qty_dollar_directory: 0
+  qty_dollar_file: 0
+  qty_dollar_params: 0
+  qty_dollar_url: 0
+  qty_dot_directory: 0
+  qty_dot_domain: 1
+  qty_dot_file: 0
+  qty_dot_params: 0
+  qty_dot_url: 1
+  qty_equal_directory: 0
+  qty_equal_file: 0
+  qty_equal_params: 0
+  qty_equal_url: 0
+  qty_exclamation_directory: 0
+  qty_exclamation_file: 0
+  qty_exclamation_params: 0
+  qty_exclamation_url: 0
+  qty_hashtag_directory: 0
+  qty_hashtag_file: 0
+  qty_hashtag_params: 0
+  qty_hashtag_url: 0
+  qty_hyphen_directory: 0
+  qty_hyphen_domain: 0
+  qty_hyphen_file: 0
+  qty_hyphen_params: 0
+  qty_hyphen_url: 0
+  qty_ip_resolved: 1
+  qty_mx_servers: 1
+  qty_nameservers: 8
+  qty_params: 0
+  qty_percent_directory: 0
+  qty_percent_file: 0
+  qty_percent_params: 0
+  qty_percent_url: 0
+  qty_plus_directory: 0
+  qty_plus_file: 0
+  qty_plus_params: 0
+  qty_plus_url: 0
+  qty_questionmark_directory: 0
+  qty_questionmark_file: 0
+  qty_questionmark_params: 0
+  qty_questionmark_url: 0
+  qty_redirects: 0
+  qty_slash_directory: 0
+  qty_slash_file: 0
+  qty_slash_params: 0
+  qty_slash_url: 2
+  qty_space_directory: 0
+  qty_space_file: 0
+  qty_space_params: 0
+  qty_space_url: 0
+  qty_tilde_directory: 0
+  qty_tilde_file: 0
+  qty_tilde_params: 0
+  qty_tilde_url: 0
+  qty_tld_url: 1
+  qty_underline_directory: 0
+  qty_underline_domain: 0
+  qty_underline_file: 0
+  qty_underline_params: 0
+  qty_underline_url: 0
+  qty_vowels_domain: 3
+  server_client_domain: 0
+  time_domain_activation: 0
+  time_domain_expiration: 0
+  time_response: 1.82362
+  tld_present_params: 0
+  tls_ssl_certificate: 1
+  ttl_hostname: 49
+  url_google_index: 0
+  url_shortened: 0
+
+------------------------------------------------------------
+EXTRACTED HTML FEATURE KEYS (35)
+------------------------------------------------------------
+  dom_depth: 28
+  has_empty_or_blank_action: 1
+  has_external_action_password_form: 0
+  has_external_favicon: 1
+  has_external_form_action: 0
+  has_meta_refresh: 0
+  has_mismatch_link_text: 0
+  has_obfuscated_js: 0
+  has_popup_script: 0
+  has_relative_form_action: 1
+  has_right_click_disabled: 0
+  has_text_selection_disabled: 0
+  num_external_links: 14
+  num_forms: 5
+  num_hidden_iframes: 0
+  num_hidden_inputs: 7
+  num_iframes: 0
+  num_internal_links: 130
+  num_links: 147
+  num_meta_tags: 51
+  num_null_self_links: 3
+  num_password_inputs: 0
+  num_submit_inputs: 25
+  num_suspicious_anchor_text: 0
+  num_text_inputs: 5
+  num_total_dom_elements: 2055
+  number_of_css_files: 47
+  number_of_forms: 5
+  number_of_hyperlinks: 147
+  number_of_images: 24
+  number_of_javascript_files: 10
+  ratio_external_links: 0.0952
+  ratio_internal_links: 0.8844
+  ratio_null_self_links: 0.0204
+  title_matches_domain: 1
+
+------------------------------------------------------------
+NORMALIZATION CANONICAL FORMS (top20 features)
+------------------------------------------------------------
+  'URLSimilarityIndex' -> 'urlsimilarityindex'
+  'NoOfExternalRef' -> 'noofexternalref'
+  'LineOfCode' -> 'lineofcode'
+  'NoOfSelfRef' -> 'noofselfref'
+  'IsHTTPS' -> 'ishttps'
+  'NoOfImage' -> 'noofimage'
+  'NoOfJS' -> 'noofjs'
+  'HasSocialNet' -> 'hassocialnet'
+  'NoOfCSS' -> 'noofcss'
+  'HasCopyrightInfo' -> 'hascopyrightinfo'
+  'NoOfOtherSpecialCharsInURL' -> 'noofotherspecialcharsinurl'
+  'LargestLineLength' -> 'largestlinelength'
+  'HasDescription' -> 'hasdescription'
+  'NoOfDegitsInURL' -> 'noofdegitsinurl'
+  'URLLength' -> 'urllength'
+  'IsResponsive' -> 'isresponsive'
+  'DegitRatioInURL' -> 'degitratioinurl'
+  'DomainTitleMatchScore' -> 'domaintitlematchscore'
+  'SpacialCharRatioInURL' -> 'spacialcharratioinurl'
+  'HasSubmitButton' -> 'hassubmitbutton'
+
+------------------------------------------------------------
+BUG 1 FIX: FEATURE MAPPING (3 passes)
+------------------------------------------------------------
+  Matched Features : 20/20
+  Missing Features : 0/20
+
+------------------------------------------------------------
+FEATURE VALUES BEFORE SCALING
+------------------------------------------------------------
+  DataFrame shape : (1, 20)
+  Any NaN         : False
+  All zeros       : False
+
+  URLSimilarityIndex                  = 100.0
+  NoOfExternalRef                     = 14.0
+  LineOfCode                          = 16440.0
+  NoOfSelfRef                         = 130.0
+  IsHTTPS                             = 1.0
+  NoOfImage                           = 24.0
+  NoOfJS                              = 10.0
+  HasSocialNet                        = 1.0
+  NoOfCSS                             = 47.0
+  HasCopyrightInfo                    = 0.0
+  NoOfOtherSpecialCharsInURL          = 0.0
+  LargestLineLength                   = 5000.0
+  HasDescription                      = 1.0
+  NoOfDegitsInURL                     = 0.0
+  URLLength                           = 18.0
+  IsResponsive                        = 1.0
+  DegitRatioInURL                     = 0.0
+  DomainTitleMatchScore               = 100.0
+  SpacialCharRatioInURL               = 0.0
+  HasSubmitButton                     = 1.0
+
+------------------------------------------------------------
+FEATURE VALUES AFTER SCALING
+------------------------------------------------------------
+  Scaled shape : (1, 20)
+  URLSimilarityIndex                  = 0.739369
+  NoOfExternalRef                     = -0.246172
+  LineOfCode                          = 4.406110
+  NoOfSelfRef                         = 0.405905
+  IsHTTPS                             = 0.528109
+  NoOfImage                           = -0.026276
+  NoOfJS                              = -0.024096
+  HasSocialNet                        = 1.085950
+  NoOfCSS                             = 0.453997
+  HasCopyrightInfo                    = -0.978453
+  NoOfOtherSpecialCharsInURL          = -0.680331
+  LargestLineLength                   = -0.049082
+  HasDescription                      = 1.123984
+  NoOfDegitsInURL                     = -0.166012
+  URLLength                           = -0.441145
+  IsResponsive                        = 0.776140
+  DegitRatioInURL                     = -0.401068
+  DomainTitleMatchScore               = 1.000926
+  SpacialCharRatioInURL               = -1.952641
+  HasSubmitButton                     = 1.183841
+
+------------------------------------------------------------
+RAW MODEL OUTPUT
+------------------------------------------------------------
+  Raw probability (sigmoid) : 1.000000
+  Phishing probability      : 0.000000
+  Threshold applied         : raw_prob >= 0.5 -> Legitimate, else -> Phishing
+
+------------------------------------------------------------
+FINAL PREDICTION
+------------------------------------------------------------
+  Prediction   : Legitimate
+  Confidence   : 100.0%
+  Threat Score : 0.0
+  Risk Level   : Low
+
+------------------------------------------------------------
+SCREENSHOT SUMMARY
+------------------------------------------------------------
+  Screenshot path    : /reports/screenshots/github.com_20260801_100628.png
+  Screenshot saved   : True
+  File size          : 198.5 KB
+
+================================================================================
+TEST URL: https://example.com
+================================================================================
+
+------------------------------------------------------------
+BUG 2 FIX: SCREENSHOT CAPTURE
+------------------------------------------------------------
+  Screenshot path   : /reports/screenshots/example.com_20260801_100644.png
+  Screenshot saved  : True
+  File size         : 10.2 KB
+
+------------------------------------------------------------
+EXTRACTED URL FEATURE KEYS (101)
+------------------------------------------------------------
+  asn_ip: 13335
+  directory_length: 0
+  domain_google_index: 0
+  domain_in_ip: 0
+  domain_length: 11
+  domain_spf: 1
+  email_in_url: 0
+  file_length: 0
+  has_directory: 0
+  has_file: 0
+  has_params: 0
+  length_url: 19
+  params_length: 0
+  qty_and_directory: 0
+  qty_and_file: 0
+  qty_and_params: 0
+  qty_and_url: 0
+  qty_asterisk_directory: 0
+  qty_asterisk_file: 0
+  qty_asterisk_params: 0
+  qty_asterisk_url: 0
+  qty_at_directory: 0
+  qty_at_domain: 0
+  qty_at_file: 0
+  qty_at_params: 0
+  qty_at_url: 0
+  qty_comma_directory: 0
+  qty_comma_file: 0
+  qty_comma_params: 0
+  qty_comma_url: 0
+  qty_dollar_directory: 0
+  qty_dollar_file: 0
+  qty_dollar_params: 0
+  qty_dollar_url: 0
+  qty_dot_directory: 0
+  qty_dot_domain: 1
+  qty_dot_file: 0
+  qty_dot_params: 0
+  qty_dot_url: 1
+  qty_equal_directory: 0
+  qty_equal_file: 0
+  qty_equal_params: 0
+  qty_equal_url: 0
+  qty_exclamation_directory: 0
+  qty_exclamation_file: 0
+  qty_exclamation_params: 0
+  qty_exclamation_url: 0
+  qty_hashtag_directory: 0
+  qty_hashtag_file: 0
+  qty_hashtag_params: 0
+  qty_hashtag_url: 0
+  qty_hyphen_directory: 0
+  qty_hyphen_domain: 0
+  qty_hyphen_file: 0
+  qty_hyphen_params: 0
+  qty_hyphen_url: 0
+  qty_ip_resolved: 2
+  qty_mx_servers: 1
+  qty_nameservers: 2
+  qty_params: 0
+  qty_percent_directory: 0
+  qty_percent_file: 0
+  qty_percent_params: 0
+  qty_percent_url: 0
+  qty_plus_directory: 0
+  qty_plus_file: 0
+  qty_plus_params: 0
+  qty_plus_url: 0
+  qty_questionmark_directory: 0
+  qty_questionmark_file: 0
+  qty_questionmark_params: 0
+  qty_questionmark_url: 0
+  qty_redirects: 0
+  qty_slash_directory: 0
+  qty_slash_file: 0
+  qty_slash_params: 0
+  qty_slash_url: 2
+  qty_space_directory: 0
+  qty_space_file: 0
+  qty_space_params: 0
+  qty_space_url: 0
+  qty_tilde_directory: 0
+  qty_tilde_file: 0
+  qty_tilde_params: 0
+  qty_tilde_url: 0
+  qty_tld_url: 1
+  qty_underline_directory: 0
+  qty_underline_domain: 0
+  qty_underline_file: 0
+  qty_underline_params: 0
+  qty_underline_url: 0
+  qty_vowels_domain: 4
+  server_client_domain: 0
+  time_domain_activation: 0
+  time_domain_expiration: 0
+  time_response: 0.220366
+  tld_present_params: 0
+  tls_ssl_certificate: 1
+  ttl_hostname: 103
+  url_google_index: 0
+  url_shortened: 0
+
+------------------------------------------------------------
+EXTRACTED HTML FEATURE KEYS (35)
+------------------------------------------------------------
+  dom_depth: 5
+  has_empty_or_blank_action: 0
+  has_external_action_password_form: 0
+  has_external_favicon: 0
+  has_external_form_action: 0
+  has_meta_refresh: 0
+  has_mismatch_link_text: 0
+  has_obfuscated_js: 0
+  has_popup_script: 0
+  has_relative_form_action: 0
+  has_right_click_disabled: 0
+  has_text_selection_disabled: 0
+  num_external_links: 1
+  num_forms: 0
+  num_hidden_iframes: 0
+  num_hidden_inputs: 0
+  num_iframes: 0
+  num_internal_links: 0
+  num_links: 1
+  num_meta_tags: 1
+  num_null_self_links: 0
+  num_password_inputs: 0
+  num_submit_inputs: 0
+  num_suspicious_anchor_text: 0
+  num_text_inputs: 0
+  num_total_dom_elements: 12
+  number_of_css_files: 0
+  number_of_forms: 0
+  number_of_hyperlinks: 1
+  number_of_images: 0
+  number_of_javascript_files: 0
+  ratio_external_links: 1.0
+  ratio_internal_links: 0.0
+  ratio_null_self_links: 0.0
+  title_matches_domain: 1
+
+------------------------------------------------------------
+NORMALIZATION CANONICAL FORMS (top20 features)
+------------------------------------------------------------
+  'URLSimilarityIndex' -> 'urlsimilarityindex'
+  'NoOfExternalRef' -> 'noofexternalref'
+  'LineOfCode' -> 'lineofcode'
+  'NoOfSelfRef' -> 'noofselfref'
+  'IsHTTPS' -> 'ishttps'
+  'NoOfImage' -> 'noofimage'
+  'NoOfJS' -> 'noofjs'
+  'HasSocialNet' -> 'hassocialnet'
+  'NoOfCSS' -> 'noofcss'
+  'HasCopyrightInfo' -> 'hascopyrightinfo'
+  'NoOfOtherSpecialCharsInURL' -> 'noofotherspecialcharsinurl'
+  'LargestLineLength' -> 'largestlinelength'
+  'HasDescription' -> 'hasdescription'
+  'NoOfDegitsInURL' -> 'noofdegitsinurl'
+  'URLLength' -> 'urllength'
+  'IsResponsive' -> 'isresponsive'
+  'DegitRatioInURL' -> 'degitratioinurl'
+  'DomainTitleMatchScore' -> 'domaintitlematchscore'
+  'SpacialCharRatioInURL' -> 'spacialcharratioinurl'
+  'HasSubmitButton' -> 'hassubmitbutton'
+
+------------------------------------------------------------
+BUG 1 FIX: FEATURE MAPPING (3 passes)
+------------------------------------------------------------
+  Matched Features : 20/20
+  Missing Features : 0/20
+
+------------------------------------------------------------
+FEATURE VALUES BEFORE SCALING
+------------------------------------------------------------
+  DataFrame shape : (1, 20)
+  Any NaN         : False
+  All zeros       : False
+
+  URLSimilarityIndex                  = 100.0
+  NoOfExternalRef                     = 1.0
+  LineOfCode                          = 96.0
+  NoOfSelfRef                         = 0.0
+  IsHTTPS                             = 1.0
+  NoOfImage                           = 0.0
+  NoOfJS                              = 0.0
+  HasSocialNet                        = 0.0
+  NoOfCSS                             = 0.0
+  HasCopyrightInfo                    = 0.0
+  NoOfOtherSpecialCharsInURL          = 0.0
+  LargestLineLength                   = 5000.0
+  HasDescription                      = 0.0
+  NoOfDegitsInURL                     = 0.0
+  URLLength                           = 19.0
+  IsResponsive                        = 1.0
+  DegitRatioInURL                     = 0.0
+  DomainTitleMatchScore               = 100.0
+  SpacialCharRatioInURL               = 0.0
+  HasSubmitButton                     = 0.0
+
+------------------------------------------------------------
+FEATURE VALUES AFTER SCALING
+------------------------------------------------------------
+  Scaled shape : (1, 20)
+  URLSimilarityIndex                  = 0.739369
+  NoOfExternalRef                     = -0.336716
+  LineOfCode                          = -0.302340
+  NoOfSelfRef                         = -0.407971
+  IsHTTPS                             = 0.528109
+  NoOfImage                           = -0.339328
+  NoOfJS                              = -0.433407
+  HasSocialNet                        = -0.920853
+  NoOfCSS                             = -0.071915
+  HasCopyrightInfo                    = -0.978453
+  NoOfOtherSpecialCharsInURL          = -0.680331
+  LargestLineLength                   = -0.049082
+  HasDescription                      = -0.889692
+  NoOfDegitsInURL                     = -0.166012
+  URLLength                           = -0.414295
+  IsResponsive                        = 0.776140
+  DegitRatioInURL                     = -0.401068
+  DomainTitleMatchScore               = 1.000926
+  SpacialCharRatioInURL               = -1.952641
+  HasSubmitButton                     = -0.844708
+
+------------------------------------------------------------
+RAW MODEL OUTPUT
+------------------------------------------------------------
+  Raw probability (sigmoid) : 0.925549
+  Phishing probability      : 0.074451
+  Threshold applied         : raw_prob >= 0.5 -> Legitimate, else -> Phishing
+
+------------------------------------------------------------
+FINAL PREDICTION
+------------------------------------------------------------
+  Prediction   : Legitimate
+  Confidence   : 92.55%
+  Threat Score : 7.4
+  Risk Level   : Low
+
+------------------------------------------------------------
+SCREENSHOT SUMMARY
+------------------------------------------------------------
+  Screenshot path    : /reports/screenshots/example.com_20260801_100644.png
+  Screenshot saved   : True
+  File size          : 10.2 KB

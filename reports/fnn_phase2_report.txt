@@ -1,0 +1,57 @@
+PHIUSIIL FNN MODEL REPORT - PHASE 2
+===================================
+
+Model architecture
+-----------------
+- Input layer: Dense input shape = 20
+- Hidden layer 1: Dense(64, ReLU) + Dropout(0.20)
+- Hidden layer 2: Dense(32, ReLU) + Dropout(0.20)
+- Output layer: Dense(1, Sigmoid)
+
+Hyperparameters
+---------------
+- Optimizer: Adam
+- Learning rate: 0.0005
+- Loss: Binary Crossentropy
+- Batch size: 32
+- Maximum epochs: 100
+- EarlyStopping monitor: val_loss, patience: 8, restore_best_weights: True
+- ReduceLROnPlateau monitor: val_loss, factor: 0.5, patience: 3, min_lr: 1e-6
+
+Trainable parameters
+--------------------
+- Total trainable parameters: 3457
+
+Training summary
+----------------
+- Training time (seconds): 138.20
+- Epochs completed: 25
+
+Evaluation metrics
+------------------
+- Accuracy: 0.9999
+- Precision: 0.9999
+- Recall: 1.0000
+- F1-score: 0.9999
+- ROC-AUC: 1.0000
+- Confusion matrix:
+  * [15075, 3]
+  * [1, 20227]
+
+Classification report
+---------------------
+-               precision    recall  f1-score   support
+- 
+-     Phishing     0.9999    0.9998    0.9999     15078
+-   Legitimate     0.9999    1.0000    0.9999     20228
+- 
+-     accuracy                         0.9999     35306
+-    macro avg     0.9999    0.9999    0.9999     35306
+- weighted avg     0.9999    0.9999    0.9999     35306
+
+Recommendation
+--------------
+- This FNN is a suitable baseline for the remaining deep learning models, especially as a strong structured-feature baseline for future DNN, Wide & Deep, and TabNet experiments.
+
+End of report
+============

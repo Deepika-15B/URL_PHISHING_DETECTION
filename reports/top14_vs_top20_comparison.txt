@@ -1,0 +1,24 @@
+IEEE PHISHING DETECTION - TOP 14 VS TOP 20 COMPARISON
+
+Top14 Accuracy: 0.926226
+Top20 Accuracy: 0.930233
+Difference (Accuracy, Top20 - Top14): +0.004007
+
+Top14 Precision: 0.927409
+Top20 Precision: 0.934262
+Difference (Precision, Top20 - Top14): +0.006853
+
+Top14 Recall: 0.934252
+Top20 Recall: 0.934415
+Difference (Recall, Top20 - Top14): +0.000163
+
+Top14 F1 Score: 0.930818
+Top20 F1 Score: 0.934339
+Difference (F1 Score, Top20 - Top14): +0.003521
+
+Top14 ROC-AUC: 0.976786
+Top20 ROC-AUC: 0.982566
+Difference (ROC-AUC, Top20 - Top14): +0.005780
+
+Performance conclusion: Top20 improved performance.
+Recommendation: Replace with Top20 Model

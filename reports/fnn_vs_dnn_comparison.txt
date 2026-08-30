@@ -1,0 +1,17 @@
+PHIUSIIL FNN vs DNN COMPARISON
+==============================
+
+Metric comparison on the corrected test set
+---------------------------------------------
+- Accuracy: FNN=0.999972, DNN=0.999972
+- Precision: FNN=1.000000, DNN=0.999951
+- Recall: FNN=0.999951, DNN=1.000000
+- F1: FNN=0.999975, DNN=0.999975
+- ROC-AUC: FNN=1.000000, DNN=1.000000
+- Training time (s): FNN=42.00, DNN=234.10
+- Parameters: FNN=3457, DNN=13953
+
+Recommendation: use the DNN as the final phishing classifier because it matched or exceeded the FNN baseline on accuracy and F1 while keeping a strong margin on recall and precision.
+
+End of report
+============

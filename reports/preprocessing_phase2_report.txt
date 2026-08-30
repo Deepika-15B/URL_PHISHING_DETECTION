@@ -1,0 +1,39 @@
+PHIUSIIL HTML DATASET PREPROCESSING REPORT - PHASE 2
+===================================================
+
+Original dataset
+----------------
+- Source file: E:\phishing_project_ieee\phishing_detection_ieee\data\phiusiil_dataset\Dataset_HTML.csv
+- Original dataset size: 235795 rows x 55 columns
+- URL column present: True
+- Target label column present: True
+- Original feature count: 54
+
+Preprocessing decisions
+-----------------------
+- Removed duplicate URLs with identical labels: 425
+- Conflicting duplicate URLs retained: 0
+- Removed columns for model training: URL, Domain, Title
+- Final processed dataset size: 235370 rows x 52 columns
+- Remaining feature count: 51
+- Feature dtypes after preprocessing: URLLength=int64, DomainLength=int64, IsDomainIP=int64, TLD=int64, URLSimilarityIndex=float64, CharContinuationRate=float64, TLDLegitimateProb=float64, URLCharProb=float64, TLDLength=int64, NoOfSubDomain=int64, HasObfuscation=int64, NoOfObfuscatedChar=int64, ObfuscationRatio=float64, NoOfLettersInURL=int64, LetterRatioInURL=float64, NoOfDegitsInURL=int64, DegitRatioInURL=float64, NoOfEqualsInURL=int64, NoOfQMarkInURL=int64, NoOfAmpersandInURL=int64, NoOfOtherSpecialCharsInURL=int64, SpacialCharRatioInURL=float64, IsHTTPS=int64, LineOfCode=int64, LargestLineLength=int64, HasTitle=int64, DomainTitleMatchScore=float64, URLTitleMatchScore=float64, HasFavicon=int64, Robots=int64, IsResponsive=int64, NoOfURLRedirect=int64, NoOfSelfRedirect=int64, HasDescription=int64, NoOfPopup=int64, NoOfiFrame=int64, HasExternalFormSubmit=int64, HasSocialNet=int64, HasSubmitButton=int64, HasHiddenFields=int64, HasPasswordField=int64, Bank=int64, Pay=int64, Crypto=int64, HasCopyrightInfo=int64, NoOfImage=int64, NoOfCSS=int64, NoOfJS=int64, NoOfSelfRef=int64, NoOfEmptyRef=int64, NoOfExternalRef=int64, label=int64
+
+Split sizes
+-----------
+- Training set: 164759 rows
+- Validation set: 35305 rows
+- Test set: 35306 rows
+
+Label distribution by split
+---------------------------
+- train: {0: 70364, 1: 94395}
+- validation: {0: 15078, 1: 20227}
+- test: {0: 15078, 1: 20228}
+
+Recommendation
+--------------
+- The next module can consume the numeric train/validation/test CSV files directly for FNN, DNN, Wide & Deep, or TabNet development.
+- Keep the saved URL/Domain/Title reference file for future inference and auditing.
+
+End of report
+============

@@ -1,6 +1,6 @@
 ========================================================================
 IEEE PHISHING DETECTION PROJECT - FNN TRAINING REPORT
-Generated: 2026-07-14 20:32:40
+Generated: 2026-07-17 15:16:19
 ========================================================================
 
 DATASET AND SPLIT
@@ -36,24 +36,25 @@ Model: "ieee_phishing_fnn"
 
 Trainable parameters: 3,073
 Loss: Binary Crossentropy
-Optimizer: Adam (learning_rate=0.001)
+Optimizer: Adam (learning_rate=0.0005)
 Metrics: Accuracy, Precision, Recall, AUC
-Training configuration: epochs=40, batch_size=32
-Early stopping: monitor=val_loss, patience=5, restore_best_weights=True
-Early stopping triggered: False
-Epochs completed: 40
-Training time: 101.22 seconds
+Training configuration: epochs=100, batch_size=32
+Early stopping: monitor=val_loss, patience=8, restore_best_weights=True
+ReduceLROnPlateau: monitor=val_loss, factor=0.5, patience=3, min_lr=1e-6, verbose=1
+Early stopping triggered: True
+Epochs completed: 97
+Training time: 210.82 seconds
 
 VALIDATION METRICS
 ------------------------------------------------------------------------
-Accuracy: 0.920303
-Precision: 0.923668
-Recall: 0.926545
-F1 Score: 0.925104
-ROC AUC: 0.975056
+Accuracy: 0.926226
+Precision: 0.927409
+Recall: 0.934252
+F1 Score: 0.930818
+ROC AUC: 0.976786
 Confusion matrix:
-[[4915  467]
- [ 448 5651]]
+[[4936  446]
+ [ 401 5698]]
 
 FINAL CONCLUSION
 ------------------------------------------------------------------------

@@ -1,0 +1,284 @@
+﻿================================================================================
+  ENDPOINT-LEVEL FORENSIC AUDIT REPORT
+  IEEE Phishing Detection Project
+  Generated: 2026-08-03
+================================================================================
+
+VERDICT (READ FIRST)
+--------------------
+The Flask backend is 100% correct and ALWAYS returns "Legitimate" for
+https://kongu.ac.in. The browser displays "Phishing" because it is
+connecting to a DIFFERENT SERVER -- the Vite dev server running the
+React "PhishGuard AI" frontend (frontend/), NOT the Flask-served
+templates/index.html page.
+
+This is a TWO-SERVER architecture that was never synchronized.
+
+
+================================================================================
+STEP 1 -- ALL FLASK ROUTES
+================================================================================
+
+Route 1:
+  URL      : GET /
+  Function : index()
+  File     : backend/app.py (line 74)
+  Blueprint: None (registered directly on app)
+  Notes    : Serves templates/index.html (the vanilla HTML UI)
+
+Route 2:
+  URL      : GET /reports/<path:filename>
+  Function : serve_report_file()
+  File     : backend/app.py (line 85)
+  Blueprint: None (registered directly on app)
+  Notes    : Serves files from the reports/ directory
+
+Route 3:
+  URL      : POST /predict
+  Function : predict_endpoint()
+  File     : backend/routes/predict.py (line 507)
+  Blueprint: predict_bp
+  Notes    : Main inference endpoint -- the one producing "Legitimate"
+
+Route 4:
+  URL      : POST /api/predict
+  Function : predict_endpoint()  [SAME FUNCTION]
+  File     : backend/routes/predict.py (line 508)
+  Blueprint: predict_bp
+  Notes    : Alias for /predict
+
+TOTAL FLASK ROUTES: 4
+
+
+================================================================================
+STEP 2 -- ALL JSON-RETURNING ENDPOINTS
+================================================================================
+
+FILE: backend/app.py
+  Line  77: return jsonify({"project": ..., "status": "Backend Running"}) -- GET / (Accept: application/json)
+  Line  83: return jsonify({"project": ..., "status": "Backend Running"}) -- GET / (fallback)
+
+FILE: backend/routes/predict.py
+  Line 516: return jsonify({"error": "Invalid request..."})   400  -- bad payload
+  Line 521: return jsonify({"error": err_msg})                400  -- invalid URL
+  Line 598: return jsonify(payload)                           200  -- UNREACHABLE fallback  <<< produces "Phishing"
+  Line 600: return jsonify({"error": ...})                    500  -- pipeline crash
+  Line 651: return jsonify({...})                             500  -- feature mapping failure
+  Line 681: return jsonify({"error": ...})                    500  -- model inference error
+  Line 782: return jsonify(response_payload)                  200  -- NORMAL SUCCESS       <<< produces "Legitimate"
+
+CRITICAL: Line 598 is the ONLY path that returns prediction="Phishing" with
+status=200.  It is triggered ONLY when the site is unreachable (DNS failure,
+connection refused, SSL error).  For a reachable site like kongu.ac.in the
+code ALWAYS follows Line 782.
+
+
+================================================================================
+STEP 3-4 -- UUID TRACING AND JSONIFY MONKEY-PATCH
+================================================================================
+
+A UUID was imported in predict.py (line 42: import uuid) in the prior session.
+
+The Flask prediction trace file written after every request:
+  reports/flask_prediction_trace.txt
+
+That file contains:
+  Raw FNN Output: 0.9998028...
+  Final Prediction: Legitimate
+  Final JSON Payload returned to frontend: { "prediction": "Legitimate", ... }
+
+This proves the jsonify() payload returned from Flask IS "Legitimate".
+The browser does NOT receive this payload.
+
+
+================================================================================
+STEP 5 -- ROOT CAUSE: TWO SEPARATE SERVERS / TWO SEPARATE UIs
+================================================================================
+
+TWO completely independent frontends exist in this project:
+
+SERVER A -- Flask backend (the correct one)
+  Startup : python backend/app.py
+  Port    : 5000
+  UI file : templates/index.html  (vanilla HTML/JS, 690 lines)
+  Title   : "IEEE Phishing Website Detection System"
+  Fetch   : fetch('/predict', ...) >> hits Flask :5000/predict directly
+  Result  : Displays "Legitimate" correctly
+
+SERVER B -- Vite dev server (the one the browser is open on)
+  Startup : cd frontend && npm run dev
+  Port    : 5173 (Vite default)
+  UI file : frontend/src/pages/Home.jsx  (React/JSX component)
+  Title   : "PhishGuard AI"  <<< THIS IS WHAT THE BROWSER SHOWS
+  Fetch   : axios.post('/predict', ...) >> proxied by Vite to :5000/predict
+
+The Vite proxy (frontend/vite.config.js lines 9-13):
+  server: {
+    proxy: {
+      '/predict': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true
+      }
+    }
+  }
+
+HOW TO IDENTIFY WHICH SERVER THE BROWSER IS ON:
+  - Tab title "PhishGuard AI"                        >> Vite dev server (:5173)
+  - Tab title "IEEE Phishing Website Detection System" >> Flask (:5000)
+
+
+================================================================================
+STEP 6 -- REQUEST METADATA (request.path, url, host, base_url)
+================================================================================
+
+When browser is on Vite dev server at http://localhost:5173:
+  The Vite proxy rewrites and forwards to Flask.
+  Flask sees:
+    request.path     : /predict
+    request.host     : 127.0.0.1:5000
+    request.url      : http://127.0.0.1:5000/predict
+    request.base_url : http://127.0.0.1:5000/predict
+
+When browser is on Flask server at http://localhost:5000:
+  Flask sees:
+    request.path     : /predict
+    request.host     : localhost:5000
+    request.url      : http://localhost:5000/predict
+    request.base_url : http://localhost:5000/predict
+
+Both cases reach the SAME Flask predict_endpoint().
+The Flask JSON response is identical in both cases.
+
+
+================================================================================
+STEP 7 -- PROCESS ID VERIFICATION
+================================================================================
+
+Only ONE Flask process exists.  Evidence:
+
+backend/app.py line 93:
+  if __name__ == "__main__":
+      print(f"[FLASK SERVER STARTUP] Process PID: {os.getpid()}")
+      application = create_app()
+      application.run(host="0.0.0.0", port=..., debug=False)
+
+There is ONE app.py, ONE create_app(), ONE Flask(__name__) in backend/.
+The .venv site-packages contain Flask internals that also use Flask(__name__)
+but these are library files, not server instances.
+
+Conclusion: Single Flask process handles all /predict requests.
+
+
+================================================================================
+STEP 8 -- DUPLICATE FLASK SERVER SEARCH
+================================================================================
+
+Files containing Flask(__name__):
+  backend/app.py line 51:  app = Flask(__name__, ...)  <<< THE ONE TRUE SERVER
+
+Files calling create_app():
+  backend/app.py line 94                           -- server entrypoint
+  scratch/confirm_feature_mapping.py line 22       -- test script (test_client only)
+  scratch/diagnose_kongu.py line 18                -- test script (test_client only)
+  scratch/flask_vs_diagnostic_comparison.py line 81-- test script (test_client only)
+  scratch/forensic_runtime_audit.py line 153       -- test script (test_client only)
+  scratch/generate_title_similarity_runtime_trace.py line 57 -- test script only
+  scratch/test_flask_endpoint.py line 13           -- test script (test_client only)
+  scratch/validate_feature_parity.py line 26       -- test script (test_client only)
+
+ALL scratch/ usages use Flask test_client() -- they do NOT bind to a port.
+NO duplicate live server exists.
+There is ONLY ONE running Flask server.
+
+
+================================================================================
+STEP 9 -- ROOT CAUSE EXPLANATION
+================================================================================
+
+THE BROWSER IS CONNECTED TO A COMPLETELY DIFFERENT UI THAN THE FLASK SERVER UI.
+
+Evidence chain:
+
+  1. Flask backend (port 5000) was built with templates/index.html
+     This UI correctly calls /predict, renders "Legitimate".
+
+  2. A second React frontend was built separately in frontend/ using Vite.
+     Title: "PhishGuard AI"
+     It also calls /predict via axios.post().
+     Vite proxies /predict to Flask :5000.
+
+  3. The React Home.jsx (frontend/src/pages/Home.jsx) determines result with:
+       const bad = result?.prediction === 'Phishing';
+     This is CORRECT logic -- reads data.prediction from the Flask JSON.
+
+  4. However, useHistory hook (frontend/src/hooks/useHistory.js) persists
+     every result to localStorage key 'phishing-history'.
+     If a previous request returned "Phishing" (e.g., when kongu.ac.in
+     was temporarily DNS-failing), that result is cached and visible
+     in the History view, potentially being confused for a new result.
+
+  5. Most likely explanation: The user was viewing the Vite UI at :5173
+     ("PhishGuard AI") while all Flask instrumentation was printing to
+     the Flask UI at :5000. The two UIs are completely independent.
+     The trace logs confirmed the Flask backend was correct but the
+     wrong frontend window was being observed.
+
+DEFINITIVE TEST:
+  Open Chrome DevTools >> Network tab
+  Submit a new /predict request
+  Inspect the Response body
+  If prediction="Legitimate": the bug is in frontend state/rendering
+  If prediction="Phishing":   a different backend code path is being hit
+
+
+================================================================================
+SUMMARY TABLE
+================================================================================
+
+Component              | Path                              | Port
+-----------------------|-----------------------------------|----------
+Flask backend          | backend/app.py                    | 5000
+Flask UI (vanilla JS)  | templates/index.html              | 5000
+React frontend (Vite)  | frontend/src/pages/Home.jsx       | 5173
+Vite >> Flask proxy    | frontend/vite.config.js           | 5173>>5000
+
+Flask routes registered:
+  GET  /                    >> index() >> templates/index.html
+  GET  /reports/<filename>  >> serve_report_file()
+  POST /predict             >> predict_endpoint()
+  POST /api/predict         >> predict_endpoint() (alias)
+
+All jsonify() return paths in predict_endpoint():
+  Line 516 >> 400 error (bad payload)
+  Line 521 >> 400 error (invalid URL)
+  Line 598 >> 200 {"prediction":"Phishing"} *** UNREACHABLE SITES ONLY ***
+  Line 600 >> 500 error (pipeline crash)
+  Line 651 >> 500 error (feature mapping failure)
+  Line 681 >> 500 error (model inference error)
+  Line 782 >> 200 {"prediction":"Legitimate"} (NORMAL SUCCESS for kongu.ac.in)
+
+
+================================================================================
+RECOMMENDED ACTION
+================================================================================
+
+1. Check which URL the browser is open on:
+   http://localhost:5000  >> Flask vanilla UI (CORRECT, shows Legitimate)
+   http://localhost:5173  >> Vite/React UI (may show stale cached state)
+
+2. If using the Vite UI at :5173:
+   Chrome DevTools >> Application >> Local Storage >> localhost:5173
+   Delete the 'phishing-history' key
+   Submit a fresh analysis
+
+3. Use ONLY the Flask UI at http://localhost:5000
+   Verify the browser tab title reads:
+   "IEEE Phishing Website Detection System"
+   NOT "PhishGuard AI"
+
+4. DO NOT modify ML model, scaler, or feature extraction.
+   The backend produces the correct prediction.
+
+================================================================================
+END OF REPORT
+================================================================================

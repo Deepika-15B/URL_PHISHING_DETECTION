@@ -1,19 +1,21 @@
-﻿"""Flask REST API for the IEEE Phishing URL Detection project.
+"""Flask REST API for the IEEE Phishing URL Detection project.
 
-This backend contains only JSON endpoints. It delegates feature extraction and
-prediction to the existing utility modules and never retrains or modifies them.
+Provides web dashboard UI (GET /) and JSON prediction endpoint (POST /predict).
+Delegates feature extraction and prediction to the modular utility modules.
 """
 from __future__ import annotations
 
 import logging
 import os
+import pickle
 import sys
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, current_app, jsonify, request
+import tensorflow as tf
+from flask import Flask, current_app, jsonify, render_template, render_template_string, request, send_from_directory
 from flask_cors import CORS
 
 # Support both ``python backend/app.py`` and package-based imports.
@@ -21,11 +23,13 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from utils.inference import load_artifacts, load_model, predict
-from utils.url_feature_extractor import extract_all_features
+from backend.routes.predict import predict_bp
 
 _LOGS_DIR = _PROJECT_ROOT / "logs"
 _LOG_FILE = _LOGS_DIR / "app.log"
+_REPORTS_DIR = _PROJECT_ROOT / "reports"
+_TEMPLATES_DIR = _PROJECT_ROOT / "templates"
+_BACKEND_TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
 
 def _configure_logging(app: Flask) -> None:
@@ -41,118 +45,51 @@ def _configure_logging(app: Flask) -> None:
     app.logger.propagate = False
 
 
-def validate_request() -> tuple[str | None, tuple[dict, int] | None]:
-    """Validate /predict JSON body and return a normalized HTTP(S) URL or JSON error."""
-    if not request.is_json:
-        return None, ({"error": "Invalid JSON: Content-Type must be application/json."}, 400)
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return None, ({"error": "Invalid JSON request body."}, 400)
-    url = payload.get("url")
-    if not isinstance(url, str) or not url.strip():
-        return None, ({"error": "Missing URL: provide a non-empty 'url' field."}, 400)
-
-    url = url.strip()
-    parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        return None, ({"error": "Invalid URL: provide an absolute http:// or https:// URL."}, 400)
-    return url, None
-
-
-def log_prediction(url: str, result: dict, processing_time: float) -> None:
-    """Record the requested audit fields for each successful API prediction."""
-    current_app.logger.info(
-        "url=%s | prediction=%s | probability=%.4f | confidence=%.2f | processing_time=%.3fs",
-        url, result["prediction"], result["probability"], result["confidence"], processing_time,
-    )
-
-
-def predict_url(url: str, app: Flask) -> dict:
-    """Extract the ordered 101-feature row and obtain its existing FNN prediction."""
-    try:
-        feature_frame = extract_all_features(url)
-    except Exception as error:
-        app.logger.exception("Feature extraction failed for url=%s", url)
-        raise RuntimeError(f"Feature Extraction Error: {error}") from error
-
-    try:
-        result = predict(
-            feature_frame,
-            artifacts=app.config["INFERENCE_ARTIFACTS"],
-            model=app.config["INFERENCE_MODEL"],
-        )
-    except Exception as error:
-        app.logger.exception("Inference failed for url=%s", url)
-        raise RuntimeError(f"Inference Error: {error}") from error
-
-    if not isinstance(result, dict):
-        raise RuntimeError("Inference Error: expected one prediction dictionary for one URL.")
-    return result
-
-
-def home():
-    """Return backend health metadata for frontend or deployment checks."""
-    return jsonify({"project": "IEEE Phishing URL Detection", "status": "Backend Running", "version": "1.0"})
-
-
 def create_app() -> Flask:
-    """Create a CORS-enabled Flask API and load immutable inference artifacts once."""
-    app = Flask(__name__)
+    """Create Flask application and pre-load model artifacts."""
+    template_folder = str(_TEMPLATES_DIR) if _TEMPLATES_DIR.exists() else str(_BACKEND_TEMPLATES_DIR)
+    app = Flask(__name__, template_folder=template_folder, static_folder=str(_PROJECT_ROOT / "backend" / "static"))
     CORS(app)
     _configure_logging(app)
 
-    # Loading once at startup avoids model deserialization for every prediction.
+    # Pre-load Phase 2 v2 artifacts once at startup
+    models_dir = _PROJECT_ROOT / "models"
     try:
-        app.config["INFERENCE_MODEL"] = load_model()
-        app.config["INFERENCE_ARTIFACTS"] = load_artifacts()
-    except Exception as error:
-        app.logger.exception("Backend startup failed while loading inference artifacts")
-        raise RuntimeError(f"Unable to initialize inference artifacts: {error}") from error
+        with open(models_dir / "top20_features.pkl", "rb") as f:
+            top20_feats = pickle.load(f)
+        with open(models_dir / "scaler_phase2_v2.pkl", "rb") as f:
+            scaler = pickle.load(f)
+        model = tf.keras.models.load_model(models_dir / "fnn_phase2_v2.keras")
 
-    app.add_url_rule("/", view_func=home, methods=["GET"])
+        app.config["TOP20_FEATURES"] = top20_feats
+        app.config["INFERENCE_SCALER"] = scaler
+        app.config["INFERENCE_MODEL"] = model
+        app.logger.info("Loaded Phase 2 v2 model artifacts successfully.")
+    except Exception as exc:
+        app.logger.warning("Could not pre-load Phase 2 v2 artifacts: %s", exc)
 
-    @app.post("/predict")
-    def predict_route():
-        url, error_response = validate_request()
-        if error_response:
-            return jsonify(error_response[0]), error_response[1]
+    # Register routes blueprint
+    app.register_blueprint(predict_bp)
 
-        started = time.perf_counter()
-        try:
-            result = predict_url(url, app)
-            processing_time = time.perf_counter() - started
-            log_prediction(url, result, processing_time)
-            return jsonify({"url": url, **result})
-        except RuntimeError as error:
-            message = str(error)
-            status = 500
-            return jsonify({"error": message}), status
-        except Exception as error:  # Defensive final boundary for JSON API safety.
-            app.logger.exception("Unexpected error for url=%s", url)
-            return jsonify({"error": f"Unexpected Error: {error}"}), 500
+    @app.get("/")
+    def index():
+        if request.headers.get("Accept") == "application/json":
+            return jsonify({"project": "IEEE Phishing URL Detection", "status": "Backend Running", "version": "1.0"})
+        index_path = _TEMPLATES_DIR / "index.html"
+        if not index_path.exists():
+            index_path = _BACKEND_TEMPLATES_DIR / "index.html"
+        if index_path.exists():
+            return index_path.read_text(encoding="utf-8"), 200, {"Content-Type": "text/html"}
+        return jsonify({"project": "IEEE Phishing URL Detection", "status": "Backend Running"}), 200
+
+    @app.route("/reports/<path:filename>")
+    def serve_report_file(filename):
+        return send_from_directory(_REPORTS_DIR, filename)
 
     return app
 
 
-def _verify_routes(app: Flask) -> None:
-    """Exercise GET / and one real POST /predict without starting a public server."""
-    with app.test_client() as client:
-        home_response = client.get("/")
-        if home_response.status_code != 200:
-            raise RuntimeError(f"GET / verification failed: {home_response.status_code}")
-        predict_response = client.post("/predict", json={"url": "https://example.com"})
-        if predict_response.status_code != 200:
-            raise RuntimeError(f"POST /predict verification failed: {predict_response.get_json()}")
-    if not _LOG_FILE.exists():
-        raise RuntimeError("Logging verification failed: logs/app.log was not created.")
-    print("Backend Started Successfully")
-    print("Routes Verified")
-    print("Prediction Successful")
-    print("Logs Created")
-
-
 if __name__ == "__main__":
+    print(f"[FLASK SERVER STARTUP] Process PID: {os.getpid()}")
     application = create_app()
-    _verify_routes(application)
     application.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=False)
-

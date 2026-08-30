@@ -1,0 +1,64 @@
+URL: http://login-facebook.verify-account-security.com
+Exception Type: HTMLFeatureExtractionError
+Browser State: Not available
+Context State: Not available
+Page State: Not available
+Screenshot State: Failed before screenshot capture
+
+Stack Trace:
+Traceback (most recent call last):
+  File "E:\phishing_project_ieee\phishing_detection_ieee\utils\html_feature_extractor.py", line 135, in fetch_rendered_html
+    raise error
+  File "E:\phishing_project_ieee\phishing_detection_ieee\utils\html_feature_extractor.py", line 116, in fetch_rendered_html
+    page.goto(url, wait_until="networkidle", timeout=self.timeout_ms)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\sync_api\_generated.py", line 9875, in goto
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.goto(
+        ^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        )
+        ^
+    )
+    ^
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\_impl\_page.py", line 560, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\_impl\_frame.py", line 156, in goto
+    await self._channel.send(
+        "goto", self._navigation_timeout, locals_to_params(locals())
+    )
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "e:\phishing_project_ieee\phishing_detection_ieee\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.goto: net::ERR_NAME_NOT_RESOLVED at http://login-facebook.verify-account-security.com/
+Call log:
+  - navigating to "http://login-facebook.verify-account-security.com/", waiting until "networkidle"
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\phishing_project_ieee\phishing_detection_ieee\backend\routes\predict.py", line 507, in predict_endpoint
+    result = pipeline.extract(url)
+  File "E:\phishing_project_ieee\phishing_detection_ieee\utils\unified_feature_pipeline.py", line 573, in extract
+    html_numeric, html_diag, html_status, html_secs, html_ok = self.extract_html_features(url)
+                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "E:\phishing_project_ieee\phishing_detection_ieee\utils\unified_feature_pipeline.py", line 501, in extract_html_features
+    html_str = self._html_extractor.fetch_rendered_html(url)
+  File "E:\phishing_project_ieee\phishing_detection_ieee\utils\html_feature_extractor.py", line 198, in fetch_rendered_html
+    raise HTMLFeatureExtractionError(f"Could not retrieve rendered HTML for {url!r}: {error}") from error
+utils.html_feature_extractor.HTMLFeatureExtractionError: Could not retrieve rendered HTML for 'http://login-facebook.verify-account-security.com': Page.goto: net::ERR_NAME_NOT_RESOLVED at http://login-facebook.verify-account-security.com/
+Call log:
+  - navigating to "http://login-facebook.verify-account-security.com/", waiting until "networkidle"
+
+

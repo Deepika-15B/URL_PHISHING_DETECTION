@@ -1,0 +1,497 @@
+PHIUSIIL HTML DATASET ANALYSIS - PHASE 2
+========================================
+
+Dataset overview
+----------------
+- Source file: E:\phishing_project_ieee\phishing_detection_ieee\data\phiusiil_dataset\Dataset_HTML.csv
+- Total samples: 235795
+- Total columns: 55
+- URL column present: True
+- Target label column: label
+- Data types of every column:
+Target label distribution
+-------------------------
+Data quality assessment
+------------------------
+- Missing values detected: 0 total cells
+- Missing values by column:
+- Duplicate URLs: 425
+- Constant columns: None
+- High-cardinality categorical columns: URL, Domain, Title
+
+Summary statistics (numeric columns)
+-----------------------------------
+                               count          mean            std        min         25%          50%          75%           max
+URLLength                   235795.0     34.573095      41.314153  13.000000   23.000000    27.000000    34.000000  6.097000e+03
+DomainLength                235795.0     21.470396       9.150793   4.000000   16.000000    20.000000    24.000000  1.100000e+02
+IsDomainIP                  235795.0      0.002706       0.051946   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+URLSimilarityIndex          235795.0     78.430778      28.976055   0.155574   57.024793   100.000000   100.000000  1.000000e+02
+CharContinuationRate        235795.0      0.845508       0.216632   0.000000    0.680000     1.000000     1.000000  1.000000e+00
+TLDLegitimateProb           235795.0      0.260423       0.251628   0.000000    0.005977     0.079963     0.522907  5.229071e-01
+URLCharProb                 235795.0      0.055747       0.010587   0.001083    0.050747     0.057970     0.062875  9.082366e-02
+TLDLength                   235795.0      2.764456       0.599739   2.000000    2.000000     3.000000     3.000000  1.300000e+01
+NoOfSubDomain               235795.0      1.164758       0.600969   0.000000    1.000000     1.000000     1.000000  1.000000e+01
+HasObfuscation              235795.0      0.002057       0.045306   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+NoOfObfuscatedChar          235795.0      0.024861       1.876249   0.000000    0.000000     0.000000     0.000000  4.470000e+02
+ObfuscationRatio            235795.0      0.000138       0.003817   0.000000    0.000000     0.000000     0.000000  3.480000e-01
+NoOfLettersInURL            235795.0     19.428919      29.090330   0.000000   10.000000    14.000000    20.000000  5.191000e+03
+LetterRatioInURL            235795.0      0.515946       0.123315   0.000000    0.435000     0.519000     0.594000  9.260000e-01
+NoOfDegitsInURL             235795.0      1.881011      11.886695   0.000000    0.000000     0.000000     0.000000  2.011000e+03
+DegitRatioInURL             235795.0      0.028616       0.070897   0.000000    0.000000     0.000000     0.000000  6.840000e-01
+NoOfEqualsInURL             235795.0      0.062241       0.934704   0.000000    0.000000     0.000000     0.000000  1.760000e+02
+NoOfQMarkInURL              235795.0      0.029403       0.193505   0.000000    0.000000     0.000000     0.000000  4.000000e+00
+NoOfAmpersandInURL          235795.0      0.025056       0.836448   0.000000    0.000000     0.000000     0.000000  1.490000e+02
+NoOfOtherSpecialCharsInURL  235795.0      2.340198       3.527603   0.000000    1.000000     1.000000     3.000000  4.990000e+02
+SpacialCharRatioInURL       235795.0      0.063309       0.032393   0.000000    0.038000     0.050000     0.083000  3.970000e-01
+IsHTTPS                     235795.0      0.782625       0.412461   0.000000    1.000000     1.000000     1.000000  1.000000e+00
+LineOfCode                  235795.0   1141.900443    3419.950513   2.000000   18.000000   429.000000  1277.000000  4.426660e+05
+LargestLineLength           235795.0  12789.532624  152201.099228  22.000000  200.000000  1090.000000  8047.000000  1.397573e+07
+HasTitle                    235795.0      0.861261       0.345675   0.000000    1.000000     1.000000     1.000000  1.000000e+00
+DomainTitleMatchScore       235795.0     50.131427      49.676981   0.000000    0.000000    75.000000   100.000000  1.000000e+02
+URLTitleMatchScore          235795.0     52.122098      49.600564   0.000000    0.000000   100.000000   100.000000  1.000000e+02
+HasFavicon                  235795.0      0.361768       0.480513   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+Robots                      235795.0      0.266541       0.442151   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+IsResponsive                235795.0      0.624513       0.484249   0.000000    0.000000     1.000000     1.000000  1.000000e+00
+NoOfURLRedirect             235795.0      0.133438       0.340048   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+NoOfSelfRedirect            235795.0      0.040107       0.196210   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+HasDescription              235795.0      0.440183       0.496410   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+NoOfPopup                   235795.0      0.221765       3.870540   0.000000    0.000000     0.000000     0.000000  6.020000e+02
+NoOfiFrame                  235795.0      1.588638       5.762561   0.000000    0.000000     0.000000     1.000000  1.602000e+03
+HasExternalFormSubmit       235795.0      0.043987       0.205067   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+HasSocialNet                235795.0      0.456570       0.498111   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+HasSubmitButton             235795.0      0.414301       0.492602   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+HasHiddenFields             235795.0      0.377799       0.484838   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+HasPasswordField            235795.0      0.102263       0.302994   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+Bank                        235795.0      0.127089       0.333074   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+Pay                         235795.0      0.237007       0.425247   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+Crypto                      235795.0      0.023474       0.151403   0.000000    0.000000     0.000000     0.000000  1.000000e+00
+HasCopyrightInfo            235795.0      0.486775       0.499826   0.000000    0.000000     0.000000     1.000000  1.000000e+00
+NoOfImage                   235795.0     26.075689      79.411815   0.000000    0.000000     8.000000    29.000000  8.956000e+03
+NoOfCSS                     235795.0      6.333111      74.866296   0.000000    0.000000     2.000000     8.000000  3.582000e+04
+NoOfJS                      235795.0     10.522305      22.312192   0.000000    0.000000     6.000000    15.000000  6.957000e+03
+NoOfSelfRef                 235795.0     65.071113     176.687539   0.000000    0.000000    12.000000    88.000000  2.739700e+04
+NoOfEmptyRef                235795.0      2.377629      17.641097   0.000000    0.000000     0.000000     1.000000  4.887000e+03
+NoOfExternalRef             235795.0     49.262516     161.027430   0.000000    1.000000    10.000000    57.000000  2.751600e+04
+label                       235795.0      0.571895       0.494805   0.000000    0.000000     1.000000     1.000000  1.000000e+00
+
+Feature categorization
+----------------------
+Detailed feature dictionary
+---------------------------
+- Feature name: URL
+  * Data type: object
+  * Description: Full URL string used as the primary phishing indicator source.
+  * Possible values: Any URL string; examples: https://www.southbankmosaics.com, https://www.uni-mainz.de, https://www.voicefmradio.co.uk, https://www.sfnmjournal.com, https://www.rewildingargentina.org
+  * Category: URL Features
+  * Numerical or categorical: Categorical
+
+- Feature name: URLLength
+  * Data type: int64
+  * Description: Total character length of the URL.
+  * Possible values: Numeric range from 13 to 6097
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Domain
+  * Data type: object
+  * Description: Domain extracted from the URL.
+  * Possible values: Domain strings; examples: www.southbankmosaics.com, www.uni-mainz.de, www.voicefmradio.co.uk, www.sfnmjournal.com, www.rewildingargentina.org
+  * Category: Domain Features
+  * Numerical or categorical: Categorical
+
+- Feature name: DomainLength
+  * Data type: int64
+  * Description: Length of the domain portion.
+  * Possible values: Numeric range from 4 to 110
+  * Category: Domain Features
+  * Numerical or categorical: Numerical
+
+- Feature name: IsDomainIP
+  * Data type: int64
+  * Description: Indicator for whether the domain resolves to an IP address.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Domain Features
+  * Numerical or categorical: Numerical
+
+- Feature name: TLD
+  * Data type: object
+  * Description: Top-level domain of the URL.
+  * Possible values: Common TLD values: com, org, net, app, uk
+  * Category: Domain Features
+  * Numerical or categorical: Categorical
+
+- Feature name: URLSimilarityIndex
+  * Data type: float64
+  * Description: Similarity between the URL and the domain title or expected pattern.
+  * Possible values: Numeric range from 0.155574352 to 100.0
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: CharContinuationRate
+  * Data type: float64
+  * Description: Rate of repeated characters in the URL.
+  * Possible values: Numeric range from 0.0 to 1.0
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: TLDLegitimateProb
+  * Data type: float64
+  * Description: Probability that the TLD is commonly used by legitimate domains.
+  * Possible values: Numeric range from 0.0 to 0.5229071
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: URLCharProb
+  * Data type: float64
+  * Description: Character-level probability score of the URL string.
+  * Possible values: Numeric range from 0.001082764 to 0.090823664
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: TLDLength
+  * Data type: int64
+  * Description: Length of the top-level domain.
+  * Possible values: Numeric range from 2 to 13
+  * Category: Domain Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfSubDomain
+  * Data type: int64
+  * Description: Count of subdomains in the URL.
+  * Possible values: Numeric range from 0 to 10
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasObfuscation
+  * Data type: int64
+  * Description: Whether the URL contains obfuscated features.
+  * Possible values: Numeric range from 0 to 1
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfObfuscatedChar
+  * Data type: int64
+  * Description: Number of obfuscated characters detected.
+  * Possible values: Numeric range from 0 to 447
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: ObfuscationRatio
+  * Data type: float64
+  * Description: Ratio of obfuscated characters in the URL.
+  * Possible values: Numeric range from 0.0 to 0.348
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfLettersInURL
+  * Data type: int64
+  * Description: Count of alphabetic characters in the URL.
+  * Possible values: Numeric range from 0 to 5191
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: LetterRatioInURL
+  * Data type: float64
+  * Description: Ratio of letters to total URL characters.
+  * Possible values: Numeric range from 0.0 to 0.926
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfDegitsInURL
+  * Data type: int64
+  * Description: Count of digits in the URL.
+  * Possible values: Numeric range from 0 to 2011
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: DegitRatioInURL
+  * Data type: float64
+  * Description: Ratio of digits to total URL characters.
+  * Possible values: Numeric range from 0.0 to 0.684
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfEqualsInURL
+  * Data type: int64
+  * Description: Count of equals signs in the URL.
+  * Possible values: Numeric range from 0 to 176
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfQMarkInURL
+  * Data type: int64
+  * Description: Count of question marks in the URL.
+  * Possible values: Numeric range from 0 to 4
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfAmpersandInURL
+  * Data type: int64
+  * Description: Count of ampersands in the URL.
+  * Possible values: Numeric range from 0 to 149
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfOtherSpecialCharsInURL
+  * Data type: int64
+  * Description: Count of other special characters in the URL.
+  * Possible values: Numeric range from 0 to 499
+  * Category: URL Features
+  * Numerical or categorical: Numerical
+
+- Feature name: SpacialCharRatioInURL
+  * Data type: float64
+  * Description: Ratio of special characters in the URL.
+  * Possible values: Numeric range from 0.0 to 0.397
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: IsHTTPS
+  * Data type: int64
+  * Description: Whether the URL uses the HTTPS protocol.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Security Features
+  * Numerical or categorical: Numerical
+
+- Feature name: LineOfCode
+  * Data type: int64
+  * Description: Total number of lines present in the HTML document.
+  * Possible values: Numeric range from 2 to 442666
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: LargestLineLength
+  * Data type: int64
+  * Description: Length of the longest line in the HTML source.
+  * Possible values: Numeric range from 22 to 13975732
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasTitle
+  * Data type: int64
+  * Description: Whether the page has an HTML title tag.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Title
+  * Data type: object
+  * Description: Page title text extracted from the HTML document.
+  * Possible values: HTML title text; examples: à¸‚à¹ˆà¸²à¸§à¸ªà¸” à¸‚à¹ˆà¸²à¸§à¸§à¸±à¸™à¸™à¸µà¹‰ à¸‚à¹ˆà¸²à¸§à¸à¸µà¸¬à¸² à¸‚à¹ˆà¸²à¸§à¸šà¸±à¸™à¹€à¸—à¸´à¸‡ à¸­à¸±à¸žà¹€à¸”à¸—à¸ªà¸”à¹ƒà¸«à¸¡à¹ˆà¸—à¸¸à¸à¸§à¸±à¸™ &#8211; à¸‚à¹ˆà¸²à¸§à¸ªà¸” à¸‚à¹ˆà¸²à¸§à¸à¸µà¸¬à¸² à¸‚à¹ˆà¸²à¸§à¸šà¸±à¸™à¹€à¸—à¸´à¸‡ à¸‚à¹ˆà¸²à¸§à¸§à¸±à¸™à¸™à¸µà¹‰ à¸­à¸±à¸›à¹€à¸”à¸•à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸£à¸§à¸”à¹€à¸£à¹‡à¸§à¸—à¸±à¸™à¹ƒà¸ˆ à¸žà¸£à¹‰à¸­à¸¡à¸£à¸±à¸šà¸Šà¸¡à¸ªà¸²à¸£à¸°à¸™à¹ˆà¸²à¸£à¸¹à¹‰à¸•à¹ˆà¸²à¸‡à¹† à¹„à¸”à¹‰à¸Ÿà¸£à¸µà¸•à¸¥à¸­à¸” 24à¸Šà¸±à¹ˆà¸§à¹‚à¸¡à¸‡, johannes gutenberg-universitÃ¤t mainz, voice fm southampton, home page: seminars in fetal and neonatal medicine , fundaciÃ³n rewilding argentina
+  * Category: HTML Features
+  * Numerical or categorical: Categorical
+
+- Feature name: DomainTitleMatchScore
+  * Data type: float64
+  * Description: Match score between the domain and the page title.
+  * Possible values: Numeric range from 0.0 to 100.0
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: URLTitleMatchScore
+  * Data type: float64
+  * Description: Match score between the URL and the page title.
+  * Possible values: Numeric range from 0.0 to 100.0
+  * Category: Derived Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasFavicon
+  * Data type: int64
+  * Description: Whether the page includes a favicon link.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Robots
+  * Data type: int64
+  * Description: Whether a robots file or robots-related content is present.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: IsResponsive
+  * Data type: int64
+  * Description: Whether the page is marked as responsive or mobile friendly.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfURLRedirect
+  * Data type: int64
+  * Description: Number of URL redirects present.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Link Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfSelfRedirect
+  * Data type: int64
+  * Description: Number of self redirects.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Link Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasDescription
+  * Data type: int64
+  * Description: Whether the page contains a meta description.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfPopup
+  * Data type: int64
+  * Description: Number of popup elements detected in the HTML.
+  * Possible values: Numeric range from 0 to 602
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfiFrame
+  * Data type: int64
+  * Description: Number of iframe elements in the HTML.
+  * Possible values: Numeric range from 0 to 1602
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasExternalFormSubmit
+  * Data type: int64
+  * Description: Whether the page contains a form that submits to an external endpoint.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasSocialNet
+  * Data type: int64
+  * Description: Whether the page references social networking links.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Security Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasSubmitButton
+  * Data type: int64
+  * Description: Whether the page contains a submit button.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasHiddenFields
+  * Data type: int64
+  * Description: Whether the page contains hidden form fields.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasPasswordField
+  * Data type: int64
+  * Description: Whether the page contains a password input field.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Bank
+  * Data type: int64
+  * Description: Whether the page contains banking or financial wording.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Security Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Pay
+  * Data type: int64
+  * Description: Whether the page contains payment-related wording.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Security Features
+  * Numerical or categorical: Numerical
+
+- Feature name: Crypto
+  * Data type: int64
+  * Description: Whether the page contains cryptocurrency-related wording.
+  * Possible values: Numeric range from 0 to 1
+  * Category: Security Features
+  * Numerical or categorical: Numerical
+
+- Feature name: HasCopyrightInfo
+  * Data type: int64
+  * Description: Whether the page contains copyright information.
+  * Possible values: Numeric range from 0 to 1
+  * Category: HTML Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfImage
+  * Data type: int64
+  * Description: Number of image tags detected in the HTML.
+  * Possible values: Numeric range from 0 to 8956
+  * Category: Image Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfCSS
+  * Data type: int64
+  * Description: Number of CSS resources or CSS-related elements.
+  * Possible values: Numeric range from 0 to 35820
+  * Category: CSS Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfJS
+  * Data type: int64
+  * Description: Number of JavaScript resources or script elements.
+  * Possible values: Numeric range from 0 to 6957
+  * Category: JavaScript Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfSelfRef
+  * Data type: int64
+  * Description: Number of self-referential links.
+  * Possible values: Numeric range from 0 to 27397
+  * Category: Link Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfEmptyRef
+  * Data type: int64
+  * Description: Number of empty or blank references.
+  * Possible values: Numeric range from 0 to 4887
+  * Category: Link Features
+  * Numerical or categorical: Numerical
+
+- Feature name: NoOfExternalRef
+  * Data type: int64
+  * Description: Number of external references or links.
+  * Possible values: Numeric range from 0 to 27516
+  * Category: Link Features
+  * Numerical or categorical: Numerical
+
+- Feature name: label
+  * Data type: int64
+  * Description: Binary target label for phishing detection.
+  * Possible values: Binary label values (0/1)
+  * Category: Target Label
+  * Numerical or categorical: Numerical
+
+Potential preprocessing requirements
+-----------------------------------
+- Remove or impute missing values before model training; missingness is present in several HTML-derived features.
+- Address duplicate rows and duplicate URLs to avoid leakage and redundancy.
+- Review constant columns; they offer no predictive value and can be dropped.
+- Handle high-cardinality text features such as URL, domain, and title carefully.
+- Confirm the binary target encoding and keep the mapping consistent across the pipeline.
+
+Potential feature engineering opportunities
+----------------------------------------
+- Create domain reputation indicators from TLD and domain characteristics.
+- Derive URL structure ratios and obfuscation signatures beyond the raw counts.
+- Engineer HTML layout and form-related indicators such as iframe-to-image ratios or form submission patterns.
+- Create interaction features between URL and HTML signals.
+- Aggregate counts of external references, scripts, styles, and images into normalized ratios.
+
+Suitability for HTML-based phishing detection
+-------------------------------------------
+- The dataset contains a rich set of HTML, URL, and security-related features, making it suitable for phishing detection research.
+- The presence of both structural page features and URL/domain signals supports a multi-signal detection approach.
+- The dataset appears well suited for rule-based analysis, exploratory modeling, and downstream implementation, provided the data quality issues are addressed.
+
+Recommendations for the next implementation phase
+------------------------------------------------
+- Keep the URL column intact and use it as a primary identifier and audit field.
+- Create a preprocessing pipeline that handles missing values, duplicate records, and constant columns explicitly.
+- Define and document a consistent label mapping before any implementation work.
+- Investigate whether the HTML-derived text fields should be normalized, tokenized, or transformed before modeling.
+- Split the dataset into training, validation, and test folds only after the preprocessing plan is finalized.
+
+End of report
+============

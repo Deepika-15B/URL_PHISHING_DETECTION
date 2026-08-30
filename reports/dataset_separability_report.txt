@@ -1,0 +1,98 @@
+PHIUSIIL DATASET SEPARABILITY REPORT
+===================================
+
+Input data
+----------
+- Train rows: 164194
+- Test rows: 35185
+- Combined rows: 199379
+- Top-20 features analyzed: 20
+
+Top discriminative features by mutual information
+------------------------------------------------
+- URLSimilarityIndex: MI=0.6614
+- LineOfCode: MI=0.6039
+- NoOfExternalRef: MI=0.5610
+- NoOfImage: MI=0.5432
+- LargestLineLength: MI=0.5279
+- NoOfSelfRef: MI=0.5264
+- NoOfJS: MI=0.5004
+- NoOfCSS: MI=0.4457
+- HasSocialNet: MI=0.3833
+- HasCopyrightInfo: MI=0.3181
+
+Top discriminative features by ANOVA F-score
+--------------------------------------------
+- URLSimilarityIndex: F=566565.1911
+- HasSocialNet: F=314757.0500
+- HasCopyrightInfo: F=244514.1793
+- HasDescription: F=179987.0518
+- IsHTTPS: F=120326.7468
+- DomainTitleMatchScore: F=102519.7485
+- HasSubmitButton: F=100143.7464
+- IsResponsive: F=87455.1287
+- SpacialCharRatioInURL: F=78945.8189
+- DegitRatioInURL: F=45608.7272
+
+Top features by class-separability effect size
+----------------------------------------------
+- URLSimilarityIndex: effect size=3.1442
+- HasSocialNet: effect size=2.7143
+- HasCopyrightInfo: effect size=2.3196
+- HasDescription: effect size=2.0126
+- HasSubmitButton: effect size=1.4848
+- DomainTitleMatchScore: effect size=1.4660
+- IsHTTPS: effect size=1.4490
+- IsResponsive: effect size=1.3128
+- SpacialCharRatioInURL: effect size=1.2183
+- DegitRatioInURL: effect size=0.8957
+
+Feature-level summary (selected top-20)
+--------------------------------------
+- URLSimilarityIndex: mean(phish)=49.6758, mean(legit)=100.0000, std(phish)=22.6353, std(legit)=0.0000, overlap_fraction=0.0078
+- NoOfExternalRef: mean(phish)=1.1188, mean(legit)=85.0264, std(phish)=3.2495, std(legit)=192.5149, overlap_fraction=1.0000
+- LineOfCode: mean(phish)=65.2522, mean(legit)=1938.1868, std(phish)=199.0218, std(legit)=4224.8258, overlap_fraction=0.2267
+- NoOfSelfRef: mean(phish)=0.5007, mean(legit)=112.9966, std(phish)=3.1882, std(legit)=205.6342, overlap_fraction=1.0000
+- IsHTTPS: mean(phish)=0.4879, mean(legit)=1.0000, std(phish)=0.4999, std(legit)=0.0000, overlap_fraction=0.4879
+- NoOfImage: mean(phish)=0.8685, mean(legit)=44.8436, std(phish)=3.2702, std(legit)=101.6140, overlap_fraction=1.0000
+- NoOfJS: mean(phish)=0.8924, mean(legit)=17.7403, std(phish)=3.3695, std(legit)=28.2682, overlap_fraction=1.0000
+- HasSocialNet: mean(phish)=0.0053, mean(legit)=0.7939, std(phish)=0.0724, std(legit)=0.4045, overlap_fraction=1.0000
+- NoOfCSS: mean(phish)=0.4397, mean(legit)=10.8066, std(phish)=1.4495, std(legit)=106.9539, overlap_fraction=1.0000
+- HasCopyrightInfo: mean(phish)=0.0575, mean(legit)=0.8080, std(phish)=0.2329, std(legit)=0.3939, overlap_fraction=1.0000
+- NoOfOtherSpecialCharsInURL: mean(phish)=3.8037, mean(legit)=1.2442, std(phish)=5.0071, std(legit)=0.5027, overlap_fraction=0.9184
+- LargestLineLength: mean(phish)=20338.4716, mean(legit)=7347.9820, std(phish)=237418.3758, std(legit)=12722.3416, overlap_fraction=0.6272
+- HasDescription: mean(phish)=0.0439, mean(legit)=0.7358, std(phish)=0.2049, std(legit)=0.4409, overlap_fraction=1.0000
+- NoOfDegitsInURL: mean(phish)=4.3385, mean(legit)=0.0514, std(phish)=17.6301, std(legit)=0.3532, overlap_fraction=0.8603
+- URLLength: mean(phish)=45.7017, mean(legit)=26.2254, std(phish)=59.0745, std(legit)=4.8144, overlap_fraction=0.8298
+- IsResponsive: mean(phish)=0.3130, mean(legit)=0.8540, std(phish)=0.4637, std(legit)=0.3531, overlap_fraction=1.0000
+- DegitRatioInURL: mean(phish)=0.0640, mean(legit)=0.0021, std(phish)=0.0966, std(legit)=0.0148, overlap_fraction=0.9756
+- DomainTitleMatchScore: mean(phish)=16.6832, mean(legit)=75.2357, std(phish)=36.9744, std(legit)=42.7018, overlap_fraction=1.0000
+- SpacialCharRatioInURL: mean(phish)=0.0832, mean(legit)=0.0483, std(phish)=0.0358, std(legit)=0.0190, overlap_fraction=0.9996
+- HasSubmitButton: mean(phish)=0.0849, mean(legit)=0.6615, std(phish)=0.2787, std(legit)=0.4732, overlap_fraction=1.0000
+
+Features that appear to nearly separate classes
+----------------------------------------------
+- URLSimilarityIndex: mean_gap=50.3242, overlap_fraction=0.0078
+- LineOfCode: mean_gap=1872.9346, overlap_fraction=0.2267
+- IsHTTPS: mean_gap=0.5121, overlap_fraction=0.4879
+- LargestLineLength: mean_gap=12990.4896, overlap_fraction=0.6272
+- URLLength: mean_gap=19.4763, overlap_fraction=0.8298
+- NoOfDegitsInURL: mean_gap=4.2871, overlap_fraction=0.8603
+- NoOfOtherSpecialCharsInURL: mean_gap=2.5595, overlap_fraction=0.9184
+- DegitRatioInURL: mean_gap=0.0619, overlap_fraction=0.9756
+- SpacialCharRatioInURL: mean_gap=0.0349, overlap_fraction=0.9996
+- NoOfSelfRef: mean_gap=112.4959, overlap_fraction=1.0000
+
+PCA and t-SNE observations
+---------------------------
+- PCA shows the classes form highly separable clusters in the reduced 2D space.
+- t-SNE also preserves strong class separation, suggesting the feature space contains a strong signal.
+
+Conclusions
+-----------
+- Both the FNN and DNN achieved similar near-perfect performance because the selected features already provide a very strong and highly separable signal.
+- The dataset appears naturally easy to classify once the engineered features and the Top-20 ranking are used.
+- Additional deep models are unlikely to improve performance dramatically unless the task shifts to noisier data, more complex feature engineering, or out-of-distribution evaluation.
+
+End of report
+============

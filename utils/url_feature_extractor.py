@@ -1,4 +1,4 @@
-﻿"""IEEE URL feature extraction module.
+"""IEEE URL feature extraction module.
 
 Converts live URLs into the ordered 101-column feature schema persisted by the
 preprocessing pipeline. Network failures are captured in status metadata and
@@ -19,6 +19,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import dns.resolver
+import numpy as np
 import pandas as pd
 import requests
 import tldextract
@@ -130,37 +131,50 @@ def extract_security_features(parsed, status: list[str]) -> dict[str, int]:
         return {"tls_ssl_certificate": 0}
 
 
-def extract_dns_features(parsed, status: list[str]) -> dict[str, int]:
-    """Resolve A, NS, and MX DNS records; failed lookups use zero fallbacks."""
+def extract_dns_features(parsed, status: list[str]) -> dict[str, float]:
+    """Resolve A, NS, and MX DNS records; failed lookups use NaN fallbacks."""
     host = parsed.hostname or ""
-    values = {"qty_ip_resolved": 0, "ttl_hostname": 0, "qty_nameservers": 0, "qty_mx_servers": 0}
+    values = {"qty_ip_resolved": np.nan, "ttl_hostname": np.nan, "qty_nameservers": np.nan, "qty_mx_servers": np.nan}
     if not host:
         status.append("DNS fallback: URL has no hostname")
         return values
+        
+    ext = tldextract.extract(host)
+    registered_domain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
+    if not registered_domain:
+        registered_domain = host
+        
     resolver = dns.resolver.Resolver(); resolver.lifetime = 4
     try:
-        answer = resolver.resolve(host, "A"); values["qty_ip_resolved"] = len(answer); values["ttl_hostname"] = int(answer.rrset.ttl)
+        answer = resolver.resolve(host, "A"); values["qty_ip_resolved"] = float(len(answer)); values["ttl_hostname"] = float(answer.rrset.ttl)
     except Exception as error: status.append(f"A-record fallback: {error}")
     for record, field in [("NS", "qty_nameservers"), ("MX", "qty_mx_servers")]:
-        try: values[field] = len(resolver.resolve(host, record))
+        try: values[field] = float(len(resolver.resolve(registered_domain, record)))
         except Exception as error: status.append(f"{record}-record fallback: {error}")
     return values
 
 
-def extract_whois_features(parsed, status: list[str]) -> dict[str, int]:
-    """Return domain age/expiry days and SPF presence; failures are zero-filled."""
+def extract_whois_features(parsed, status: list[str]) -> dict[str, float]:
+    """Return domain age/expiry days and SPF presence; failures use NaN fallbacks."""
     host = parsed.hostname or ""
-    values = {"time_domain_activation": 0, "time_domain_expiration": 0, "domain_spf": 0}
+    values = {"time_domain_activation": np.nan, "time_domain_expiration": np.nan, "domain_spf": np.nan}
+    if not host: return values
+    
+    ext = tldextract.extract(host)
+    registered_domain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
+    if not registered_domain:
+        registered_domain = host
+        
     try:
-        record = whois.whois(host)
+        record = whois.whois(registered_domain)
         now = datetime.now(timezone.utc)
         created, expires = record.creation_date, record.expiration_date
         created = created[0] if isinstance(created, list) else created; expires = expires[0] if isinstance(expires, list) else expires
-        if created: values["time_domain_activation"] = max(0, (now - created.replace(tzinfo=created.tzinfo or timezone.utc)).days)
-        if expires: values["time_domain_expiration"] = max(0, (expires.replace(tzinfo=expires.tzinfo or timezone.utc) - now).days)
+        if created: values["time_domain_activation"] = float(max(0, (now - created.replace(tzinfo=created.tzinfo or timezone.utc)).days))
+        if expires: values["time_domain_expiration"] = float(max(0, (expires.replace(tzinfo=expires.tzinfo or timezone.utc) - now).days))
     except Exception as error: status.append(f"WHOIS fallback: {error}")
     try:
-        txt = dns.resolver.resolve(host, "TXT"); values["domain_spf"] = int(any("v=spf1" in str(row).lower() for row in txt))
+        txt = dns.resolver.resolve(registered_domain, "TXT"); values["domain_spf"] = float(int(any("v=spf1" in str(row).lower() for row in txt)))
     except Exception as error: status.append(f"SPF fallback: {error}")
     return values
 
@@ -175,19 +189,19 @@ def extract_http_features(url: str, status: list[str]) -> dict[str, float]:
         return {"time_response": 0.0, "qty_redirects": 0}
 
 
-def extract_network_features(parsed, dns_values: dict[str, int], status: list[str]) -> dict[str, int]:
-    """Attempt ASN lookup via ipinfo; return zero if the public lookup is unavailable."""
-    if not dns_values.get("qty_ip_resolved"):
-        status.append("ASN fallback (asn_ip=0): no resolved IP")
-        return {"asn_ip": 0}
+def extract_network_features(parsed, dns_values: dict[str, float], status: list[str]) -> dict[str, float]:
+    """Attempt ASN lookup via ipinfo; return NaN if the public lookup is unavailable."""
+    if not dns_values.get("qty_ip_resolved") or pd.isna(dns_values.get("qty_ip_resolved")):
+        status.append("ASN fallback (asn_ip=NaN): no resolved IP")
+        return {"asn_ip": np.nan}
     try:
         ip = socket.gethostbyname(parsed.hostname or "")
         response = requests.get(f"https://ipinfo.io/{ip}/json", timeout=5).json()
         match = re.search(r"(\d+)", str(response.get("org", "")))
-        return {"asn_ip": int(match.group(1)) if match else 0}
+        return {"asn_ip": float(match.group(1)) if match else np.nan}
     except Exception as error:
-        status.append(f"ASN fallback (asn_ip=0): {error}")
-        return {"asn_ip": 0}
+        status.append(f"ASN fallback (asn_ip=NaN): {error}")
+        return {"asn_ip": np.nan}
 
 
 def extract_all_features(url: str) -> pd.DataFrame:
@@ -198,12 +212,21 @@ def extract_all_features(url: str) -> pd.DataFrame:
     dns_values = extract_dns_features(parsed, status)
     values: dict[str, float] = {}
     for category in [extract_url_structure_features(normalised, parsed), extract_domain_features(normalised, parsed), extract_directory_features(parsed), extract_file_features(parsed), extract_query_features(parsed), extract_security_features(parsed, status), dns_values, extract_whois_features(parsed, status), extract_http_features(normalised, status), extract_network_features(parsed, dns_values, status)]: values.update(category)
-    # Google-index fields are in the historical schema but require prohibited scraping; explicit zero fallback is recorded.
-    values.setdefault("url_google_index", 0); values.setdefault("domain_google_index", 0); status.append("Index fallbacks (url_google_index/domain_google_index=0): live search scraping not performed")
+    # Google-index fields are in the historical schema but require prohibited scraping; explicit NaN fallback is recorded.
+    values.setdefault("url_google_index", np.nan); values.setdefault("domain_google_index", np.nan); status.append("Index fallbacks (url_google_index/domain_google_index=NaN): live search scraping not performed")
     missing = [name for name in schema if name not in values]
-    for name in missing: values[name] = 0; status.append(f"Schema fallback ({name}=0): no extractor mapping")
+    for name in missing: values[name] = np.nan; status.append(f"Schema fallback ({name}=NaN): no extractor mapping")
     frame = pd.DataFrame([[values[name] for name in schema]], columns=schema)
-    frame.attrs.update({"url": normalised, "status": status, "extraction_seconds": time.perf_counter() - started, "missing_features": missing})
+    dns_ok = not any("DNS fallback" in s or "A-record fallback" in s for s in status)
+    whois_ok = not any("WHOIS fallback" in s for s in status)
+    frame.attrs.update({
+        "url": normalised, 
+        "status": status, 
+        "extraction_seconds": time.perf_counter() - started, 
+        "missing_features": missing,
+        "dns_extraction_ok": dns_ok,
+        "whois_extraction_ok": whois_ok
+    })
     return frame
 
 

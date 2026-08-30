@@ -1,0 +1,177 @@
+================================================================================
+IEEE PHISHING DETECTION SYSTEM - INFERENCE & SCREENSHOT DEBUG REPORT
+================================================================================
+Timestamp: 2026-08-01
+Scope: Inference Pipeline & Playwright Screenshot Diagnostics
+Target Artifacts: fnn_phase2_v2.keras, scaler_phase2_v2.pkl, top20_features.pkl
+Test Sites Evaluated: Google, GitHub, Wikipedia, Example.com, NeverSSL
+
+--------------------------------------------------------------------------------
+1. ARTIFACT LOADING VERIFICATION
+--------------------------------------------------------------------------------
+- fnn_phase2_v2.keras: LOADED SUCCESSFULLY (True)
+- scaler_phase2_v2.pkl: LOADED SUCCESSFULLY (True)
+- top20_features.pkl: LOADED SUCCESSFULLY (True)
+
+--------------------------------------------------------------------------------
+2. MODEL & SCALER METADATA AND SHAPES
+--------------------------------------------------------------------------------
+- Model Input Shape: (None, 20)
+- Scaler Feature Count (n_features_in_): 20 (StandardScaler)
+- Number of Selected Top-20 Features: 20
+- Top-20 Features List:
+  ['URLSimilarityIndex', 'NoOfExternalRef', 'LineOfCode', 'NoOfSelfRef',
+   'IsHTTPS', 'NoOfImage', 'NoOfJS', 'HasSocialNet', 'NoOfCSS',
+   'HasCopyrightInfo', 'NoOfOtherSpecialCharsInURL', 'LargestLineLength',
+   'HasDescription', 'NoOfDegitsInURL', 'URLLength', 'IsResponsive',
+   'DegitRatioInURL', 'DomainTitleMatchScore', 'SpacialCharRatioInURL',
+   'HasSubmitButton']
+
+--------------------------------------------------------------------------------
+3. PRE-PREDICTION DATAFRAME DIAGNOSTICS (TESTED ACROSS ALL 5 WEBSITES)
+--------------------------------------------------------------------------------
+- Ordered Feature Names:
+  ['URLSimilarityIndex', 'NoOfExternalRef', 'LineOfCode', 'NoOfSelfRef',
+   'IsHTTPS', 'NoOfImage', 'NoOfJS', 'HasSocialNet', 'NoOfCSS',
+   'HasCopyrightInfo', 'NoOfOtherSpecialCharsInURL', 'LargestLineLength',
+   'HasDescription', 'NoOfDegitsInURL', 'URLLength', 'IsResponsive',
+   'DegitRatioInURL', 'DomainTitleMatchScore', 'SpacialCharRatioInURL',
+   'HasSubmitButton']
+
+- Feature Values (Before Scaling):
+  {'URLSimilarityIndex': 0.0, 'NoOfExternalRef': 0.0, 'LineOfCode': 0.0,
+   'NoOfSelfRef': 0.0, 'IsHTTPS': 0.0, 'NoOfImage': 0.0, 'NoOfJS': 0.0,
+   'HasSocialNet': 0.0, 'NoOfCSS': 0.0, 'HasCopyrightInfo': 0.0,
+   'NoOfOtherSpecialCharsInURL': 0.0, 'LargestLineLength': 0.0,
+   'HasDescription': 0.0, 'NoOfDegitsInURL': 0.0, 'URLLength': 0.0,
+   'IsResponsive': 0.0, 'DegitRatioInURL': 0.0, 'DomainTitleMatchScore': 0.0,
+   'SpacialCharRatioInURL': 0.0, 'HasSubmitButton': 0.0}
+
+- Dataframe Shape: (1, 20)
+- Dataframe Columns: Match top20_features.pkl exactly (20 columns).
+
+--------------------------------------------------------------------------------
+4. RAW MODEL OUTPUT BEFORE THRESHOLDING
+--------------------------------------------------------------------------------
+For all test URLs (Google, GitHub, Wikipedia, Example.com, NeverSSL):
+- Scaled Input Feature Vector:
+  [-2.7206795, -0.34368083, -0.32999575, -0.407971, -1.893549, -0.33932754,
+   -0.43340713, -0.92085296, -0.07191503, -0.978453, -0.68033123, -0.0798367,
+   -0.88969237, -0.16601194, -0.92444295, -1.2884277, -0.4010682, -1.0122412,
+   -1.9526411, -0.84470785]
+- Raw Probability Output from model.predict():
+  Raw probability: 0.000000
+
+--------------------------------------------------------------------------------
+5. PREDICTION LOGIC & LABEL MAPPING ANALYSIS
+--------------------------------------------------------------------------------
+- Code Implementation in backend/routes/predict.py:
+  phishing_probability = 1.0 - raw_prob
+  prediction_label = "Legitimate" if raw_prob >= 0.5 else "Phishing"
+
+- Evaluation:
+  * raw_prob >= 0.5  --> Legitimate (Label 1)
+  * raw_prob < 0.5   --> Phishing   (Label 0)
+
+- Comparison Against Training Labels (phase2_train_fnn_v2.py):
+  * Training binary labels: Label 0 = Phishing, Label 1 = Legitimate.
+  * The threshold logic thresholding (raw_prob < 0.5 -> Phishing) correctly aligns
+    with the target classes used during Phase 2 v2 training.
+  * However, because raw_prob is ALWAYS 0.000000 due to all-zero feature input:
+    - raw_prob < 0.5 evaluates to True.
+    - prediction_label = "Phishing"
+    - phishing_probability = 1.0 - 0.000000 = 1.0000 (100.0%)
+    - Confidence = 100.0%
+    - Threat Score = 100.0
+
+--------------------------------------------------------------------------------
+6. FEATURE ORDERING VERIFICATION
+--------------------------------------------------------------------------------
+- Feature ordering in input DataFrame EXACTLY MATCHES top20_features.pkl.
+- Top-20 feature list, input DataFrame columns, and scaler.feature_names_in_
+  are identical in name and order (100% match).
+
+--------------------------------------------------------------------------------
+7. SCALER TRANSFORMATION ALIGNMENT
+--------------------------------------------------------------------------------
+- Scaler Type: StandardScaler (scaler_phase2_v2.pkl)
+- Scaler feature_names_in_: Matches top20_features.pkl (20 features).
+- Issue Identified: The backend route (`backend/routes/predict.py`) extracts
+  `top20_features` exclusively from `result.url_features` using:
+  `feat_dict = {col: url_feats.get(col, 0.0) for col in top20_features}`
+- However, `url_feats` contains 101 URL lexical/network features (e.g. `qty_dot_url`,
+  `qty_hyphen_url`), whereas `top20_features` contains 20 PHIUSIIL features (e.g.
+  `LineOfCode`, `NoOfImage`, `NoOfJS`, `NoOfCSS`, `IsHTTPS`, `HasCopyrightInfo`).
+- None of the 20 PHIUSIIL features exist in `url_feats`, causing `url_feats.get()`
+  to return 0.0 for all 20 columns every time.
+
+--------------------------------------------------------------------------------
+8. NAN & ZERO VALUE DIAGNOSTICS BEFORE PREDICTION
+--------------------------------------------------------------------------------
+- Any NaN values present in input DataFrame? False (0 NaNs)
+- All zeros present in input DataFrame? True (All 20 features are 0.0)
+- Columns with 0.0 value: 20 out of 20 (100% zero vector)
+
+--------------------------------------------------------------------------------
+9. PLAYWRIGHT SCREENSHOT GENERATION DIAGNOSTICS
+--------------------------------------------------------------------------------
+- Browser launched? True (Headless Chromium launched successfully)
+- Page loaded? True (Playwright successfully fetches rendered HTML)
+- Screenshot filename? None (No filename generated or returned)
+- Save Directory: E:\phishing_project_ieee\phishing_detection_ieee\reports\screenshots (Exists: True)
+- Failure Mechanism:
+  1. During `pipeline.extract(url)`, `HTMLFeatureExtractor.fetch_rendered_html(url)`
+     opens a Playwright page, fetches HTML content, and then EXPLICITLY CLOSES
+     the page in its `finally:` block (`page.close()`).
+  2. After `extract()` finishes, `predict.py` calls `capture_page_screenshot(pipeline, url)`.
+  3. Inside `capture_page_screenshot`, `pages = extractor._context.pages` is checked.
+  4. Because `page.close()` was already executed in `fetch_rendered_html()`,
+     `extractor._context.pages` is an empty list `[]`.
+  5. The guard `if pages:` evaluates to `False`, returning `None` silently without
+     taking or saving any screenshot to `reports/screenshots/`.
+
+--------------------------------------------------------------------------------
+10. SCREENSHOT EXCEPTION HANDLING DIAGNOSTICS
+--------------------------------------------------------------------------------
+- In `backend/routes/predict.py`, `capture_page_screenshot()` wraps execution in
+  `try...except Exception as exc:` and logs `logging.warning(...)`.
+- However, no exception is raised during normal flow because `if pages:` silently
+  skips screenshot capture when `pages` is empty (`[]`).
+- If an explicit attempt is made to call `.screenshot()` on a closed page or empty
+  context, Playwright raises `Target page, context or browser has been closed`.
+
+================================================================================
+EXACT ROOT CAUSES SUMMARY
+================================================================================
+
+ISSUE 1 ROOT CAUSE (Every site classified as Phishing, 100% Confidence, Threat Score 100):
+--------------------------------------------------------------------------------
+Feature Key Mismatch in Feature Dict Assembly (`backend/routes/predict.py`):
+1. `backend/routes/predict.py` populates the model input DataFrame by querying
+   `url_feats.get(col, 0.0)` for each column in `top20_features`.
+2. `top20_features.pkl` consists of 20 PHIUSIIL dataset features (`LineOfCode`,
+   `NoOfImage`, `NoOfJS`, `NoOfCSS`, `IsHTTPS`, `HasCopyrightInfo`, etc.), whereas
+   `url_feats` contains 101 URL lexical features (`qty_dot_url`, `qty_slash_url`, etc.).
+3. Because 0 of the 20 `top20_features` exist in `url_feats`, `url_feats.get()`
+   defaults to `0.0` for all 20 features, resulting in an all-zero feature vector
+   `[0.0, 0.0, ..., 0.0]` for EVERY site.
+4. `scaler_phase2_v2.pkl` scales the all-zero vector to negative z-scores
+   (e.g., `[-2.72, -0.34, ..., -0.84]`).
+5. `fnn_phase2_v2.keras` outputs `raw_prob = 0.000000` for this scaled zero vector.
+6. The prediction logic (`prediction_label = "Legitimate" if raw_prob >= 0.5 else "Phishing"`)
+   evaluates `0.000000 < 0.5`, classifying every single URL as "Phishing" with
+   `phishing_probability = 1.0 - 0.0 = 1.0` (100% Confidence, Threat Score 100).
+
+ISSUE 2 ROOT CAUSE (No browser screenshot ever saved in reports/screenshots/):
+--------------------------------------------------------------------------------
+Premature Page Closure & Empty Context Page List:
+1. `HTMLFeatureExtractor.fetch_rendered_html(url)` in `utils/html_feature_extractor.py`
+   closes the Playwright page in a `finally:` block (`page.close()`) immediately after
+   retrieving the page HTML.
+2. In `backend/routes/predict.py`, `capture_page_screenshot(pipeline, url)` is called
+   AFTER `pipeline.extract(url)` completes.
+3. `capture_page_screenshot` inspects `pages = extractor._context.pages`. Since the page
+   was closed inside `fetch_rendered_html()`, `extractor._context.pages` is `[]` (empty).
+4. The condition `if pages:` evaluates to `False`, so screenshot capture is skipped
+   and returns `None` without attempting to save a file or raising an exception.
+================================================================================

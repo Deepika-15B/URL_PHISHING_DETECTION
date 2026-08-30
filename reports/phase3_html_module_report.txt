@@ -1,0 +1,63 @@
+PHASE 3 HTML FEATURE EXTRACTION MODULE
+======================================
+
+Scope
+-----
+This is a standalone HTML extraction framework. It does not train a model,
+load model artifacts, score URLs, or integrate with Flask.
+
+Architecture
+------------
+- utils/html_feature_extractor.py exposes HTMLFeatureExtractor.
+- Playwright launches headless Chromium with JavaScript enabled.
+- The rendered page source is parsed by BeautifulSoup with the lxml parser.
+- The extractor returns a small dictionary of raw HTML/page signals.
+- phase3_html_demo.py is a command-line consumer of only this module.
+
+Workflow
+--------
+1. Construct HTMLFeatureExtractor with a navigation timeout.
+2. launch_browser() starts a headless Chromium context.
+3. fetch_rendered_html(url) follows redirects and waits for network idle.
+4. If a page continuously polls, it falls back to DOM-content-loaded plus a
+   short dynamic-content wait.
+5. parse_html(html) creates BeautifulSoup(html, "lxml").
+6. extract_basic_information(soup) returns the requested basic page features.
+7. close_browser() releases context, browser, and Playwright resources.
+
+Implemented Methods
+-------------------
+- launch_browser(): headless Chromium, JavaScript enabled, configurable timeout.
+- fetch_rendered_html(url): validates URL, handles redirects, dynamic content,
+  timeouts, navigation failures, and returns rendered source.
+- parse_html(html): BeautifulSoup lxml parsing.
+- extract_basic_information(soup): title, meta description, forms, images,
+  external JavaScript files, CSS files, and hyperlinks.
+- close_browser(): deterministic browser-resource cleanup.
+
+Error Handling
+--------------
+- Invalid, empty, non-HTTP, and non-HTTPS URLs are rejected.
+- Browser startup, page navigation, and timeout failures produce the explicit
+  HTMLFeatureExtractionError exception.
+- Browser resources are closed even after navigation errors.
+- Missing Phase 3 dependencies produce an installation-oriented error rather
+  than importing or running model-related code.
+
+Dependencies and Demo
+---------------------
+Install the standalone Phase 3 dependencies:
+  pip install playwright beautifulsoup4 lxml
+  playwright install chromium
+
+Run:
+  python phase3_html_demo.py https://example.com
+
+Future Extension Plan
+---------------------
+- Add richer content, form-action, external-resource, and DOM-structure
+  measurements in a Phase 3 feature-mapping layer.
+- Add a clearly separated adapter that maps these raw values to the eventual
+  inference feature schema only after the Phase 3 feature contract is defined.
+- Add unit tests with static HTML fixtures and integration tests using a local
+  test server. Flask integration and phishing prediction remain out of scope.

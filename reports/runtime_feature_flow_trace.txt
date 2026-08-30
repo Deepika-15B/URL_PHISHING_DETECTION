@@ -1,0 +1,228 @@
+RUNTIME FEATURE FLOW TRACE & AUDIT REPORT
+======================================================================
+Target URL: https://kongu.ac.in
+
+TASK 2: ABSOLUTE FILE PATHS & SHA256 HASHES
+----------------------------------------------------------------------
+  html_feature_extractor.py     
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\utils\html_feature_extractor.py
+    Exists: True
+    SHA256: 02d733dadf3ffda3707eb87b752486ce33336462b452e3f43680e77fba322f71
+  unified_feature_pipeline.py   
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\utils\unified_feature_pipeline.py
+    Exists: True
+    SHA256: 7f5a3e27c5227cb5565606500a87ba5b1c2569f8ec080a95fd216f5a3886904e
+  predict.py                    
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\backend\routes\predict.py
+    Exists: True
+    SHA256: 169d7de552a2a0907bb91abe63ca6bc47dcee82b6b0adb956459980d7c9c544c
+  feature_alias_map.json        
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\models\feature_alias_map.json
+    Exists: True
+    SHA256: 527f125e7e13b47bf4ad150f34ad1c6ab731130e2acc31273816dee4d916f74c
+  top20_features.pkl            
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\models\top20_features.pkl
+    Exists: True
+    SHA256: 687c72beed8687579138e611b362c9f693ca3de8cdb747880edc2d1513e3c5a4
+  scaler_phase2_v2.pkl          
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\models\scaler_phase2_v2.pkl
+    Exists: True
+    SHA256: c16ea874275ed9ae42ac5c675e4fba1472987398c1c2914476148367b80af107
+  fnn_phase2_v2.keras           
+    Path  : E:\phishing_project_ieee\phishing_detection_ieee\models\fnn_phase2_v2.keras
+    Exists: True
+    SHA256: 52f8db9a8b6a570b839fd35b6b37b81bc4e0c86daae443a4948775f81f0cb887
+
+TASK 5: VERIFY _HTML_NUMERIC_KEYS IN MEMORY
+----------------------------------------------------------------------
+  Total keys in _HTML_NUMERIC_KEYS: 36
+  'title_domain_similarity_score' in _HTML_NUMERIC_KEYS: True
+  _HTML_STRING_KEYS: ['page_title', 'meta_description', 'extracted_brand_name']
+
+TASK 4: VERIFY FEATURE_ALIAS_MAP.JSON LOADED IN MEMORY
+----------------------------------------------------------------------
+Actual feature_alias_map.json loaded in memory:
+{
+  "NoOfExternalRef": {
+    "type": "key",
+    "key": "num_external_links"
+  },
+  "NoOfSelfRef": {
+    "type": "key",
+    "key": "num_internal_links"
+  },
+  "NoOfImage": {
+    "type": "key",
+    "key": "number_of_images"
+  },
+  "NoOfJS": {
+    "type": "key",
+    "key": "number_of_javascript_files"
+  },
+  "NoOfCSS": {
+    "type": "key",
+    "key": "number_of_css_files"
+  },
+  "URLLength": {
+    "type": "url_len"
+  },
+  "IsHTTPS": {
+    "type": "url_https"
+  },
+  "NoOfDegitsInURL": {
+    "type": "url_digit_count"
+  },
+  "DegitRatioInURL": {
+    "type": "url_digit_ratio"
+  },
+  "SpacialCharRatioInURL": {
+    "type": "url_special_ratio"
+  },
+  "NoOfOtherSpecialCharsInURL": {
+    "type": "url_special_count"
+  },
+  "HasSubmitButton": {
+    "type": "key_gt0",
+    "key": "num_submit_inputs"
+  },
+  "HasDescription": {
+    "type": "html_diag_nonempty",
+    "key": "meta_description"
+  },
+  "URLSimilarityIndex": {
+    "type": "key",
+    "key": "title_domain_similarity_score",
+    "_note": "PHIUSIIL range is 0-100. Now uses continuous partial string matching."
+  },
+  "DomainTitleMatchScore": {
+    "type": "key",
+    "key": "title_domain_similarity_score",
+    "_note": "PHIUSIIL range is 0-100. Now uses continuous partial string matching."
+  },
+  "LineOfCode": {
+    "type": "dom_to_loc",
+    "key": "num_total_dom_elements",
+    "_note": "PHIUSIIL LineOfCode = actual HTML source line count (mean=1145). We approximate: num_total_dom_elements * 8 (avg 8 HTML lines per DOM element). This gives a range similar to the training distribution."
+  },
+  "HasSocialNet": {
+    "type": "key_gt",
+    "key": "num_external_links",
+    "threshold": 3,
+    "_note": "Binary. Legitimate sites with social share buttons typically have >= 4 external links. Mean=0.459."
+  },
+  "HasCopyrightInfo": {
+    "type": "const",
+    "value": 0,
+    "_note": "Binary. Cannot be determined from available extractors (requires text mining for copyright symbol/text). Using 0 as conservative fallback. Mean=0.489."
+  },
+  "LargestLineLength": {
+    "type": "const",
+    "value": 5000,
+    "_note": "PHIUSIIL mean=12980 chars, std=162579 (extremely high variance). Using 5000 as a neutral middle-ground for typical legitimate pages. True computation requires raw HTML source."
+  },
+  "IsResponsive": {
+    "type": "const",
+    "value": 1,
+    "_note": "Binary. Mean=0.624 in training data. Most modern pages are responsive. Defaulting to 1 (responsive) is statistically safer than 0. Cannot detect without viewport meta parsing."
+  }
+}
+
+URLSimilarityIndex spec    : {'type': 'key', 'key': 'title_domain_similarity_score', '_note': 'PHIUSIIL range is 0-100. Now uses continuous partial string matching.'}
+DomainTitleMatchScore spec : {'type': 'key', 'key': 'title_domain_similarity_score', '_note': 'PHIUSIIL range is 0-100. Now uses continuous partial string matching.'}
+
+TASK 3 & STEP-BY-STEP FEATURE FLOW TRACE
+======================================================================
+STEP 1: HTML Extractor Direct Output
+----------------------------------------------------------------------
+Total keys returned by HTMLFeatureExtractor: 39
+raw_html_dict['title_domain_similarity_score']: 100.0
+raw_html_dict['title_matches_domain']:          1
+raw_html_dict['page_title']:                     kec | kongu engineering college
+raw_html_dict['extracted_brand_name']:            kongu
+
+STEP 2: Unified Feature Pipeline Output
+----------------------------------------------------------------------
+Immediately after HTML extraction:
+  html_feats.keys() count: 36
+  html_feats['title_domain_similarity_score']: 100.0
+  html_feats['title_matches_domain']:          1
+
+STEP 3: Combined Feature Dictionary ({**url_feats, **html_feats})
+----------------------------------------------------------------------
+Immediately before alias mapping:
+  combined_feats.keys() count: 137
+  combined_feats['title_domain_similarity_score']: 100.0
+  combined_feats['title_matches_domain']:          1
+
+STEP 4: Alias Mapping Resolution (build_feature_key_mapping)
+----------------------------------------------------------------------
+Immediately after alias mapping:
+  URLSimilarityIndex    = 100.0
+  DomainTitleMatchScore = 100.0
+
+STEP 5: Top-20 Dataframe & Scaled Feature Vector
+----------------------------------------------------------------------
+Raw Top-20 Feature Vector:
+  URLSimilarityIndex                  = 100.0
+  NoOfExternalRef                     = 0.0
+  LineOfCode                          = 536.0
+  NoOfSelfRef                         = 0.0
+  IsHTTPS                             = 1.0
+  NoOfImage                           = 1.0
+  NoOfJS                              = 3.0
+  HasSocialNet                        = 0.0
+  NoOfCSS                             = 6.0
+  HasCopyrightInfo                    = 0.0
+  NoOfOtherSpecialCharsInURL          = 0.0
+  LargestLineLength                   = 5000.0
+  HasDescription                      = 1.0
+  NoOfDegitsInURL                     = 0.0
+  URLLength                           = 19.0
+  IsResponsive                        = 1.0
+  DegitRatioInURL                     = 0.0
+  DomainTitleMatchScore               = 100.0
+  SpacialCharRatioInURL               = 0.0
+  HasSubmitButton                     = 0.0
+
+Scaled Feature Vector (X_scaled):
+  [00] URLSimilarityIndex               = +0.739369
+  [01] NoOfExternalRef                  = -0.343681
+  [02] LineOfCode                       = -0.175583
+  [03] NoOfSelfRef                      = -0.407971
+  [04] IsHTTPS                          = +0.528109
+  [05] NoOfImage                        = -0.326284
+  [06] NoOfJS                           = -0.310614
+  [07] HasSocialNet                     = -0.920853
+  [08] NoOfCSS                          = -0.004777
+  [09] HasCopyrightInfo                 = -0.978453
+  [10] NoOfOtherSpecialCharsInURL       = -0.680331
+  [11] LargestLineLength                = -0.049082
+  [12] HasDescription                   = +1.123984
+  [13] NoOfDegitsInURL                  = -0.166012
+  [14] URLLength                        = -0.414295
+  [15] IsResponsive                     = +0.776140
+  [16] DegitRatioInURL                  = -0.401068
+  [17] DomainTitleMatchScore            = +1.000926
+  [18] SpacialCharRatioInURL            = -1.952641
+  [19] HasSubmitButton                  = -0.844708
+
+STEP 6: FNN Model Input & Output
+----------------------------------------------------------------------
+Raw FNN Sigmoid Output (raw_prob) : 0.99980289
+Phishing Probability (1 - raw_prob): 0.00019711
+Final Prediction                   : Legitimate
+
+TASK 6: DISCREPANCY ANALYSIS & DROP IDENTIFICATION
+======================================================================
+Does title_domain_similarity_score disappear anywhere in the current codebase?
+  RESULT: NO. It flows cleanly from HTMLFeatureExtractor -> UnifiedFeaturePipeline -> combined_feats -> build_feature_key_mapping -> DataFrame.
+
+Why did the previous Flask trace show URLSimilarityIndex = 0.0 and html_feature_count = 36?
+  EXPLANATION:
+    1. The Flask trace log was generated by a LIVE Flask app process running in a background terminal.
+    2. That Flask process was started BEFORE html_feature_extractor.py and feature_alias_map.json were updated.
+    3. Python caches loaded modules in sys.modules, so the running server kept executing the old in-memory code where:
+       - html_feature_count was 36 (instead of 39)
+       - URLSimilarityIndex was mapped via binary title_matches_domain * 100
+       - urlparse extracted 'ac' from 'kongu.ac.in', causing title_matches_domain to be 0
+    4. When running in a fresh process (or restarting Flask), the updated code is loaded, title_domain_similarity_score is 100.0, URLSimilarityIndex is 100.0, DomainTitleMatchScore is 100.0, and FNN outputs 0.9998 (Legitimate).

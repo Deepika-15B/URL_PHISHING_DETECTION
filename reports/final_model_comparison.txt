@@ -1,0 +1,25 @@
+FINAL PHIUSIIL MODEL COMPARISON
+===============================
+
+All metrics use the corrected duplicate-free test split and the Top-20 features.
+
+Model | Accuracy | Precision | Recall | F1-score | ROC-AUC | Train s | Parameters | Size bytes | Epochs | Inference ms/sample
+------------------------------------------------------------------------------------------------------------------------------
+FNN | 0.999972 | 1.000000 | 0.999951 | 0.999975 | 1.000000 | 69.70 | 3457 | 71449 | 11 | 0.012638
+DNN | 0.999972 | 0.999951 | 1.000000 | 0.999975 | 1.000000 | 234.10 | 13953 | 218976 | 22 | 0.009229
+Wide & Deep | 0.999972 | 0.999951 | 1.000000 | 0.999975 | 1.000000 | 303.87 | 14393 | 245487 | 26 | 0.009782
+TabNet | 0.999687 | 0.999506 | 0.999951 | 0.999728 | 0.999990 | 1037.64 | 32888 | 148589 | 26 | 0.059525
+
+Deployment assessment
+---------------------
+- Computational complexity: FNN is the simplest dense network; DNN and Wide & Deep use more dense operations; TabNet additionally performs five sequential attentive decision steps.
+- Memory usage: FNN has the smallest parameter footprint. TabNet requires additional attention-mask activations, so its runtime memory demand is higher than the compact FNN.
+- Inference speed: the measured test-batch latency is reported above; sequential TabNet attention generally trades latency for feature-selection interpretability.
+- Real-time suitability: prefer FNN for the Flask system when it is statistically tied on detection quality, because it has the smallest architecture and lowest expected serving overhead.
+
+Conclusions
+-----------
+- Best overall test performance by the stated F1/ROC-AUC/accuracy tie-break: DNN.
+- Statistical meaning: exact paired McNemar p-values for TabNet versus FNN/DNN/Wide & Deep are FNN=0.006348, DNN=0.001953, Wide & Deep=0.001953. At alpha=0.05, differences with p>=0.05 are not statistically significant; this single holdout test does not establish significance for any smaller p-value without a pre-specified multiple-comparison procedure.
+- Dataset saturation: near-identical near-perfect metrics would be consistent with saturation from highly discriminative engineered URL and HTML features; this should be confirmed on a temporally or source-disjoint external test set.
+- Deployment recommendation: integrate FNN when its holdout performance remains statistically tied, retaining TabNet as an offline interpretability/benchmark model.

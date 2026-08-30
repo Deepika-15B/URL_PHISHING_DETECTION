@@ -1,0 +1,108 @@
+TOP-20 FEATURE PARITY AUDIT
+==================================================
+This report compares the mathematical definition of features in the PHIUSIIL dataset versus the runtime approximations implemented in `feature_alias_map.json`.
+
+EXECUTIVE SUMMARY
+--------------------------------------------------
+The FNN misclassifies legitimate sites like `kongu.ac.in` because of extreme penalties from poorly approximated features. Specifically, `URLSimilarityIndex` and `DomainTitleMatchScore` are continuous percentage scores (0-100) in the training data, but they are approximated using a brittle binary check (`title_matches_domain`). Furthermore, the domain extraction logic incorrectly extracts "ac.in" for "kongu.ac.in", meaning the title "Kongu Engineering College" fails to match, plunging these two vital features to 0 and driving the sigmoid output to 0.0 (Phishing).
+
+RANKING OF MISMATCHED FEATURES (Likelihood to cause extreme probabilities)
+--------------------------------------------------
+1. URLSimilarityIndex (High Risk)
+2. DomainTitleMatchScore (High Risk)
+3. LineOfCode (Medium Risk)
+4. HasSocialNet (Medium Risk)
+5. LargestLineLength (Medium Risk)
+6. HasCopyrightInfo (Low Risk)
+7. IsResponsive (Low Risk)
+
+FEATURE BY FEATURE BREAKDOWN
+--------------------------------------------------
+
+1. URLSimilarityIndex
+   - Training Definition: A complex similarity percentage (0-100) comparing the domain and the HTML <title>.
+   - Runtime Definition: `title_matches_domain * 100`
+   - Identical: NO.
+   - Explanation: The runtime is a strict binary approximation (0 or 100). If the brittle domain parsing fails to match the title exactly (e.g. extracts "ac.in" instead of "kongu"), it falls to 0, which is an extreme -2.72 standard deviations outlier, instantly causing false positives.
+
+2. DomainTitleMatchScore
+   - Training Definition: A continuous score (0-100) evaluating the match between Domain and Title.
+   - Runtime Definition: `title_matches_domain * 100`
+   - Identical: NO.
+   - Explanation: Same binary approximation flaw as URLSimilarityIndex.
+
+3. LineOfCode
+   - Training Definition: Total number of text lines in the raw HTML source code.
+   - Runtime Definition: `num_total_dom_elements * 8`
+   - Identical: NO.
+   - Explanation: This is an empirical approximation because the pure raw HTML string is not counted. It scales total DOM elements by 8 to approximate the line count.
+
+4. HasSocialNet
+   - Training Definition: Binary 1 if social networking links (Facebook, Twitter) are present.
+   - Runtime Definition: 1 if `num_external_links > 3`, else 0.
+   - Identical: NO.
+   - Explanation: A highly generic heuristic replacing actual text-mining of social domains. A legitimate page with few external links will wrongfully score 0.
+
+5. LargestLineLength
+   - Training Definition: Number of characters in the longest line of the raw HTML source.
+   - Runtime Definition: Hardcoded constant `5000`
+   - Identical: NO.
+   - Explanation: Hardcoded placeholder. True computation requires line-by-line parsing of raw HTML which is skipped in DOM traversal.
+
+6. HasCopyrightInfo
+   - Training Definition: Binary 1 if copyright text/symbol is present in HTML.
+   - Runtime Definition: Hardcoded constant `0`
+   - Identical: NO.
+   - Explanation: Hardcoded placeholder. Cannot be reliably determined without text mining.
+
+7. IsResponsive
+   - Training Definition: Binary 1 if webpage has responsive design tags (viewport).
+   - Runtime Definition: Hardcoded constant `1`
+   - Identical: NO.
+   - Explanation: Hardcoded placeholder to default to legitimate behavior.
+
+8. NoOfExternalRef
+   - Identical: YES. Matches `num_external_links`.
+
+9. NoOfSelfRef
+   - Identical: YES. Matches `num_internal_links`.
+
+10. IsHTTPS
+    - Identical: YES. Checks URL scheme.
+
+11. NoOfImage
+    - Identical: YES. Matches `number_of_images`.
+
+12. NoOfJS
+    - Identical: YES. Matches `number_of_javascript_files`.
+
+13. NoOfCSS
+    - Identical: YES. Matches `number_of_css_files`.
+
+14. NoOfOtherSpecialCharsInURL
+    - Identical: YES. Extracted precisely via `url_special_count`.
+
+15. HasDescription
+    - Identical: YES. Matches `meta_description` existence.
+
+16. NoOfDegitsInURL
+    - Identical: YES. Computed via `url_digit_count`.
+
+17. URLLength
+    - Identical: YES. Length of URL.
+
+18. DegitRatioInURL
+    - Identical: YES. Extracted precisely.
+
+19. SpacialCharRatioInURL
+    - Identical: YES. Extracted precisely.
+
+20. HasSubmitButton
+    - Identical: YES. 1 if `num_submit_inputs > 0`.
+
+
+URL EXTRACTION FAILURE BEHAVIORS
+--------------------------------------------------
+If URL extraction network resolution fails (but HTML parsing somehow runs), the following URL-based fallback defaults occur:
+- URLLength, IsHTTPS, NoOfDegitsInURL, DegitRatioInURL, SpacialCharRatioInURL, NoOfOtherSpecialCharsInURL will still succeed because they are calculated statically on the URL string without network calls.
+- URLSimilarityIndex and DomainTitleMatchScore will default to 0 if the domain parsing fails to match the title, which often happens in a network error state if the title defaults to empty or "Error".

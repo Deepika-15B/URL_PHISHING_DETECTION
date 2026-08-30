@@ -1,0 +1,55 @@
+PHASE 2 DEPLOYMENT BENCHMARK
+============================
+
+Scope: read-only benchmark of the completed artifacts on corrected processed_v2/test.csv.
+Timing protocol: each batch timed 20 times after warm-up; averages are reported. CPU is process CPU%, where 100% represents one fully used logical CPU. Peak RAM is peak RSS increase while inference executes; zero means no measurable additional RSS allocation after warm-up.
+
+Prediction performance
+----------------------
+Model | Accuracy | Precision | Recall | F1-score | ROC-AUC
+FNN | 0.999972 | 1.000000 | 0.999951 | 0.999975 | 1.000000
+DNN | 0.999972 | 0.999951 | 1.000000 | 0.999975 | 1.000000
+Wide & Deep | 0.999972 | 0.999951 | 1.000000 | 0.999975 | 1.000000
+TabNet | 0.999687 | 0.999506 | 0.999951 | 0.999728 | 0.999990
+
+Deployment and resource performance
+-----------------------------------
+Model | Model size MB | Parameters | 1 sample ms | 100 samples ms | 1000 samples ms | Peak RAM MB | CPU %
+FNN | 0.0681 | 3457 | 55.3361 | 57.8676 | 58.8344 | 4.1289 | 117.43
+DNN | 0.2088 | 13953 | 55.4629 | 55.3934 | 70.1765 | 4.3906 | 120.58
+Wide & Deep | 0.2341 | 14393 | 57.6337 | 61.5768 | 59.7293 | 4.4961 | 116.45
+TabNet | 0.1417 | 32888 | 5.1197 | 13.3610 | 54.6372 | 7.0508 | 95.52
+
+Complexity and deployment analysis
+------------------------------------
+FNN
+- Architecture: Dense(64)-Dense(32)-output
+- Hidden/decision layers: 2
+- Trainable parameters: 3457
+- Computational complexity: Two compact dense layers; lowest O(sum layer products) cost.
+- Ease of deployment: Straightforward Keras serving with compact dense operations.
+DNN
+- Architecture: Dense(128)-Dense(64)-Dense(32)-output
+- Hidden/decision layers: 3
+- Trainable parameters: 13953
+- Computational complexity: Three dense hidden layers; moderate O(sum layer products) cost.
+- Ease of deployment: Straightforward Keras serving with compact dense operations.
+Wide & Deep
+- Architecture: Wide linear branch + 3-layer dense branch
+- Hidden/decision layers: 4
+- Trainable parameters: 14393
+- Computational complexity: Two parallel branches; highest dense-operation overhead of the Keras models.
+- Ease of deployment: Straightforward Keras serving; extra dual-input wiring.
+TabNet
+- Architecture: Five-step attentive TabNet encoder with sparse feature masks
+- Hidden/decision layers: 5
+- Trainable parameters: 32888
+- Computational complexity: Five sequential attentive decision steps; more control-flow and activation overhead than dense networks.
+- Ease of deployment: Portable PyTorch artifact, but requires PyTorch TabNet runtime and has higher serving complexity.
+
+Final recommendation
+--------------------
+- Highest test-set performance under F1/ROC-AUC/accuracy tie-breaking: DNN.
+- Recommended Flask integration: FNN, provided its prediction metrics remain effectively tied with the alternatives shown above. It offers the simplest model, smallest dense architecture, and avoids TabNet's sequential-attention and runtime-dependency overhead.
+- Trade-off: the table provides the measured speed and memory evidence. If FNN is within trivial metric differences of the leaders, those differences do not by themselves justify DNN, Wide & Deep, or TabNet complexity for real-time URL checks.
+- Statistical interpretation: this benchmark measures deployment behavior, not a new statistical test. The previous corrected-split results should be considered practically tied when their errors differ on only a handful of samples; a paired test or external holdout is required to claim a meaningful quality advantage.

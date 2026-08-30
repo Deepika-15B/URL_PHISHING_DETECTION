@@ -1,0 +1,16 @@
+PHIUSIIL FNN V1 vs V2 COMPARISON
+================================
+
+Metric comparison on the corrected test set
+---------------------------------------------
+- Accuracy: previous=0.999887, new=0.999972
+- Precision: previous=0.999852, new=1.000000
+- Recall: previous=0.999951, new=0.999951
+- F1: previous=0.999901, new=0.999975
+- ROC-AUC: previous=1.000000, new=1.000000
+- Epochs: previous=25, new=11
+
+Interpretation: the duplicate-removal step did not significantly hurt performance; the new model remained at or near the previous level.
+
+End of report
+============

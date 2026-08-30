@@ -1,0 +1,37 @@
+PHIUSIIL WIDE & DEEP vs FNN vs DNN COMPARISON
+===============================================
+
+Metric comparison on the corrected PhiUSIIL test set
+-------------------------------------------------------
+- Wide & Deep accuracy: 0.999972
+- FNN accuracy: 0.999972
+- DNN accuracy: 0.999972
+- Wide & Deep precision: 0.999951
+- FNN precision: 1.000000
+- DNN precision: 0.999951
+- Wide & Deep recall: 1.000000
+- FNN recall: 0.999951
+- DNN recall: 1.000000
+- Wide & Deep F1: 0.999975
+- FNN F1: 0.999975
+- DNN F1: 0.999975
+- Wide & Deep ROC-AUC: 1.000000
+- FNN ROC-AUC: 1.000000
+- DNN ROC-AUC: 1.000000
+- Wide & Deep training time (s): 303.87
+- FNN training time (s): 69.70
+- DNN training time (s): 234.10
+- Wide & Deep parameters: 14393
+- FNN parameters: 3457
+- DNN parameters: 13953
+- Wide & Deep epochs trained: 26
+- FNN epochs trained: 11
+- DNN epochs trained: 22
+
+- Improvement over FNN: Yes. Wide & Deep improves over FNN on this corrected test set by a small margin in the composite accuracy/F1/ROC-AUC view.
+- Improvement over DNN: No. Wide & Deep is effectively tied with DNN and does not show a meaningful gain on this corrected test set.
+- Statistical meaning: No. The observed difference is limited to only a handful of samples and is not strong evidence of a meaningful performance gap.
+- Saturation conclusion: Yes. The PhiUSIIL dataset appears saturated because the FNN, DNN, and Wide & Deep models all achieve nearly identical near-perfect performance, which strongly suggests the engineered URL and HTML features are already highly discriminative.
+
+End of report
+============

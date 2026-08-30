@@ -1,0 +1,194 @@
+FULL TITLE SIMILARITY RUNTIME TRACE REPORT
+======================================================================
+Target URL: https://kongu.ac.in
+
+STAGE 5: ENTIRE ALIAS ENTRY LOADED FROM JSON
+----------------------------------------------------------------------
+URLSimilarityIndex entry:
+{
+  "URLSimilarityIndex": {
+    "type": "key",
+    "key": "title_domain_similarity_score",
+    "_note": "PHIUSIIL range is 0-100. Now uses continuous partial string matching."
+  }
+}
+
+DomainTitleMatchScore entry:
+{
+  "DomainTitleMatchScore": {
+    "type": "key",
+    "key": "title_domain_similarity_score",
+    "_note": "PHIUSIIL range is 0-100. Now uses continuous partial string matching."
+  }
+}
+
+STAGE 1 - 4: RUNTIME FEATURE FLOW TRACE
+----------------------------------------------------------------------
+STAGE 1: HTML Extractor Direct Output
+========== HTML SCORE ==========
+brand                kongu
+title                kec | kongu engineering college
+similarity           100.0
+title_matches_domain 1
+returned             100.0
+================================
+
+STAGE 2: UnifiedFeaturePipeline Output
+========== PIPELINE STAGE 2 ==========
+html_feats['title_domain_similarity_score']: 100.0
+html_feats['title_matches_domain']:          1
+======================================
+
+STAGE 3: Combined Feature Dictionary
+========== STAGE 3 ==========
+url_feats title_domain_similarity_score:  None
+html_feats title_domain_similarity_score: 100.0
+combined_feats title_domain_similarity_score: 100.0
+=============================
+
+STAGE 4: Alias Mapping Resolution
+========== STAGE 4 & 5: Resolving URLSimilarityIndex ==========
+requested feature  : URLSimilarityIndex
+alias spec         : {'type': 'key', 'key': 'title_domain_similarity_score', '_note': 'PHIUSIIL range is 0-100. Now uses continuous partial string matching.'}
+resolved key       : title_domain_similarity_score
+combined_feats val : 100.0
+default value      : None
+final assigned val : 100.0
+====================================================
+========== STAGE 4 & 5: Resolving DomainTitleMatchScore ==========
+requested feature  : DomainTitleMatchScore
+alias spec         : {'type': 'key', 'key': 'title_domain_similarity_score', '_note': 'PHIUSIIL range is 0-100. Now uses continuous partial string matching.'}
+resolved key       : title_domain_similarity_score
+combined_feats val : 100.0
+default value      : None
+final assigned val : 100.0
+====================================================
+
+TOP20 DATAFRAME & SCALED VECTOR & RAW SIGMOID
+----------------------------------------------------------------------
+Top20 DataFrame URLSimilarityIndex    : 100.0
+Top20 DataFrame DomainTitleMatchScore : 100.0
+Scaled URLSimilarityIndex [00]       : +0.739369
+Scaled DomainTitleMatchScore [17]    : +1.000926
+Raw Sigmoid Output (raw_prob)        : 0.99980289
+Prediction                           : Legitimate
+
+STAGE 6: PROJECT-WIDE OCCURRENCES OF TARGET TERMS
+======================================================================
+Total occurrences found across project: 79
+
+  [title_matches_domain] phase3_html_demo.py:94 -> "title_matches_domain": "Title Contains Brand Domain",
+  [title_matches_domain] phase3_hybrid_pipeline_demo.py:162 -> for k in ["has_external_favicon", "has_meta_refresh", "title_matches_domain",
+  [title_domain_similarity_score] scratch\audit_codebase_stages_6_and_7.py:13 -> "title_domain_similarity_score",
+  [title_matches_domain] scratch\audit_codebase_stages_6_and_7.py:14 -> "title_matches_domain",
+  [URLSimilarityIndex] scratch\audit_codebase_stages_6_and_7.py:15 -> "URLSimilarityIndex",
+  [DomainTitleMatchScore] scratch\audit_codebase_stages_6_and_7.py:16 -> "DomainTitleMatchScore",
+  [title_domain_similarity_score] scratch\confirm_feature_mapping.py:4 -> Confirms that title_domain_similarity_score is present in the
+  [URLSimilarityIndex] scratch\confirm_feature_mapping.py:6 -> that it is correctly mapped to both URLSimilarityIndex and
+  [DomainTitleMatchScore] scratch\confirm_feature_mapping.py:7 -> DomainTitleMatchScore.
+  [title_domain_similarity_score] scratch\confirm_feature_mapping.py:48 -> KEY = "title_domain_similarity_score"
+  [URLSimilarityIndex] scratch\confirm_feature_mapping.py:62 -> print("\nAlias map entries for URLSimilarityIndex and DomainTitleMatchScore:")
+  [DomainTitleMatchScore] scratch\confirm_feature_mapping.py:62 -> print("\nAlias map entries for URLSimilarityIndex and DomainTitleMatchScore:")
+  [URLSimilarityIndex] scratch\confirm_feature_mapping.py:63 -> for feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [DomainTitleMatchScore] scratch\confirm_feature_mapping.py:63 -> for feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [URLSimilarityIndex] scratch\confirm_feature_mapping.py:80 -> print(f"  URLSimilarityIndex    = {feat_dict.get('URLSimilarityIndex')}")
+  [DomainTitleMatchScore] scratch\confirm_feature_mapping.py:81 -> print(f"  DomainTitleMatchScore = {feat_dict.get('DomainTitleMatchScore')}")
+  [title_domain_similarity_score] scratch\flask_vs_diagnostic_comparison.py:72 -> "title_sim_in_html_feats": "title_domain_similarity_score" in html_feats,
+  [title_domain_similarity_score] scratch\flask_vs_diagnostic_comparison.py:73 -> "title_sim_in_combined":   "title_domain_similarity_score" in combined_feats,
+  [title_domain_similarity_score] scratch\flask_vs_diagnostic_comparison.py:74 -> "title_sim_value": combined_feats.get("title_domain_similarity_score", "MISSING"),
+  [title_domain_similarity_score] scratch\flask_vs_diagnostic_comparison.py:168 -> out.append(f"  {'title_domain_similarity_score value':<38}  {str(standalone['title_sim_value']):>12}  {'(see Flask trace)':>13}")
+  [title_domain_similarity_score] scratch\flask_vs_diagnostic_comparison.py:254 -> out.append("    - Did NOT compute title_domain_similarity_score")
+  [URLSimilarityIndex] scratch\flask_vs_diagnostic_comparison.py:256 -> out.append("  Evidence from the trace: html_feature_count=36 and URLSimilarityIndex=0.0")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:71 -> has_sim_numeric = "title_domain_similarity_score" in _HTML_NUMERIC_KEYS
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:73 -> report_lines.append(f"  'title_domain_similarity_score' in _HTML_NUMERIC_KEYS: {has_sim_numeric}")
+  [URLSimilarityIndex] scratch\generate_runtime_flow_trace.py:88 -> report_lines.append(f"URLSimilarityIndex spec    : {alias_map.get('URLSimilarityIndex')}")
+  [DomainTitleMatchScore] scratch\generate_runtime_flow_trace.py:89 -> report_lines.append(f"DomainTitleMatchScore spec : {alias_map.get('DomainTitleMatchScore')}")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:109 -> report_lines.append(f"raw_html_dict['title_domain_similarity_score']: {raw_html_dict.get('title_domain_similarity_score', 'MISSING')}")
+  [title_matches_domain] scratch\generate_runtime_flow_trace.py:110 -> report_lines.append(f"raw_html_dict['title_matches_domain']:          {raw_html_dict.get('title_matches_domain', 'MISSING')}")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:129 -> report_lines.append(f"  html_feats['title_domain_similarity_score']: {html_feats.get('title_domain_similarity_score', 'MISSING')}")
+  [title_matches_domain] scratch\generate_runtime_flow_trace.py:130 -> report_lines.append(f"  html_feats['title_matches_domain']:          {html_feats.get('title_matches_domain', 'MISSING')}")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:140 -> report_lines.append(f"  combined_feats['title_domain_similarity_score']: {combined_feats.get('title_domain_similarity_score', 'MISSING')}")
+  [title_matches_domain] scratch\generate_runtime_flow_trace.py:141 -> report_lines.append(f"  combined_feats['title_matches_domain']:          {combined_feats.get('title_matches_domain', 'MISSING')}")
+  [URLSimilarityIndex] scratch\generate_runtime_flow_trace.py:160 -> report_lines.append(f"  URLSimilarityIndex    = {feat_dict.get('URLSimilarityIndex', 'MISSING')}")
+  [DomainTitleMatchScore] scratch\generate_runtime_flow_trace.py:161 -> report_lines.append(f"  DomainTitleMatchScore = {feat_dict.get('DomainTitleMatchScore', 'MISSING')}")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:204 -> report_lines.append("Does title_domain_similarity_score disappear anywhere in the current codebase?")
+  [URLSimilarityIndex] scratch\generate_runtime_flow_trace.py:207 -> report_lines.append("Why did the previous Flask trace show URLSimilarityIndex = 0.0 and html_feature_count = 36?")
+  [title_matches_domain] scratch\generate_runtime_flow_trace.py:213 -> report_lines.append("       - URLSimilarityIndex was mapped via binary title_matches_domain * 100")
+  [URLSimilarityIndex] scratch\generate_runtime_flow_trace.py:213 -> report_lines.append("       - URLSimilarityIndex was mapped via binary title_matches_domain * 100")
+  [title_matches_domain] scratch\generate_runtime_flow_trace.py:214 -> report_lines.append("       - urlparse extracted 'ac' from 'kongu.ac.in', causing title_matches_domain to be 0")
+  [title_domain_similarity_score] scratch\generate_runtime_flow_trace.py:215 -> report_lines.append("    4. When running in a fresh process (or restarting Flask), the updated code is loaded, title_domain_similarity_score is 100.0, URLSimilarityIndex is 100.0, DomainTitleMatchScore is 100.0, and FNN outputs 0.9998 (Legitimate).")
+  [URLSimilarityIndex] scratch\generate_runtime_flow_trace.py:215 -> report_lines.append("    4. When running in a fresh process (or restarting Flask), the updated code is loaded, title_domain_similarity_score is 100.0, URLSimilarityIndex is 100.0, DomainTitleMatchScore is 100.0, and FNN outputs 0.9998 (Legitimate).")
+  [DomainTitleMatchScore] scratch\generate_runtime_flow_trace.py:215 -> report_lines.append("    4. When running in a fresh process (or restarting Flask), the updated code is loaded, title_domain_similarity_score is 100.0, URLSimilarityIndex is 100.0, DomainTitleMatchScore is 100.0, and FNN outputs 0.9998 (Legitimate).")
+  [URLSimilarityIndex] scratch\validate_feature_parity.py:4 -> Validates the continuous URLSimilarityIndex and DomainTitleMatchScore
+  [DomainTitleMatchScore] scratch\validate_feature_parity.py:4 -> Validates the continuous URLSimilarityIndex and DomainTitleMatchScore
+  [URLSimilarityIndex] scratch\validate_feature_parity.py:71 -> new_url_sim      = feat_dict.get("URLSimilarityIndex",    0.0)
+  [DomainTitleMatchScore] scratch\validate_feature_parity.py:72 -> new_domain_sim   = feat_dict.get("DomainTitleMatchScore", 0.0)
+  [title_matches_domain] scratch\validate_feature_parity.py:73 -> old_binary_value = html_feats.get("title_matches_domain", 0) * 100
+  [URLSimilarityIndex] scratch\validate_feature_parity.py:84 -> "--- URLSimilarityIndex ---",
+  [DomainTitleMatchScore] scratch\validate_feature_parity.py:89 -> "--- DomainTitleMatchScore ---",
+  [title_matches_domain] utils\html_feature_extractor.py:574 -> title_matches_domain = 0
+  [title_matches_domain] utils\html_feature_extractor.py:576 -> title_matches_domain = 1
+  [title_domain_similarity_score] utils\html_feature_extractor.py:579 -> title_domain_similarity_score = 0.0
+  [title_domain_similarity_score] utils\html_feature_extractor.py:584 -> title_domain_similarity_score = 100.0
+  [title_domain_similarity_score] utils\html_feature_extractor.py:596 -> title_domain_similarity_score = round(best_ratio * 100.0, 2)
+  [title_domain_similarity_score] utils\html_feature_extractor.py:601 -> print(f"similarity           {title_domain_similarity_score}")
+  [title_matches_domain] utils\html_feature_extractor.py:602 -> print(f"title_matches_domain {title_matches_domain}")
+  [title_domain_similarity_score] utils\html_feature_extractor.py:603 -> print(f"returned             {title_domain_similarity_score}")
+  [title_matches_domain] utils\html_feature_extractor.py:622 -> "title_matches_domain": title_matches_domain,
+  [title_domain_similarity_score] utils\html_feature_extractor.py:623 -> "title_domain_similarity_score": title_domain_similarity_score,
+  [title_matches_domain] utils\unified_feature_pipeline.py:116 -> "title_matches_domain",
+  [title_domain_similarity_score] utils\unified_feature_pipeline.py:117 -> "title_domain_similarity_score",
+  [title_domain_similarity_score] utils\unified_feature_pipeline.py:516 -> print(f"html_numeric['title_domain_similarity_score']: {numeric.get('title_domain_similarity_score')}")
+  [title_matches_domain] utils\unified_feature_pipeline.py:517 -> print(f"html_numeric['title_matches_domain']:          {numeric.get('title_matches_domain')}")
+  [URLSimilarityIndex] backend\routes\predict.py:244 -> # (e.g. URLSimilarityIndex mean=78.6, DomainTitleMatchScore mean=50.3).
+  [DomainTitleMatchScore] backend\routes\predict.py:244 -> # (e.g. URLSimilarityIndex mean=78.6, DomainTitleMatchScore mean=50.3).
+  [URLSimilarityIndex] backend\routes\predict.py:357 -> if feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [DomainTitleMatchScore] backend\routes\predict.py:357 -> if feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [URLSimilarityIndex] backend\routes\predict.py:370 -> if feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [DomainTitleMatchScore] backend\routes\predict.py:370 -> if feat in ("URLSimilarityIndex", "DomainTitleMatchScore"):
+  [title_domain_similarity_score] backend\routes\predict.py:632 -> print(f"url_feats title_domain_similarity_score:  {url_feats.get('title_domain_similarity_score')}")
+  [title_domain_similarity_score] backend\routes\predict.py:633 -> print(f"html_feats title_domain_similarity_score: {html_feats.get('title_domain_similarity_score')}")
+  [title_domain_similarity_score] backend\routes\predict.py:638 -> print(f"combined_feats title_domain_similarity_score: {combined_feats.get('title_domain_similarity_score')}")
+  [title_matches_domain] backend\routes\predict.py:738 -> "title_matches_domain": "Yes" if html_feats.get("title_matches_domain") == 1 else "No",
+  [URLSimilarityIndex] models\feature_alias_map.json:4 -> "URLSimilarityIndex":          "mean=78.6,  std=28.9  (0-100 scale, NOT binary)",
+  [DomainTitleMatchScore] models\feature_alias_map.json:21 -> "DomainTitleMatchScore":       "mean=50.3,  std=49.7  (0-100 scale, NOT binary)",
+  [URLSimilarityIndex] models\feature_alias_map.json:57 -> "URLSimilarityIndex":         {
+  [title_domain_similarity_score] models\feature_alias_map.json:59 -> "key": "title_domain_similarity_score",
+  [DomainTitleMatchScore] models\feature_alias_map.json:63 -> "DomainTitleMatchScore":      {
+  [title_domain_similarity_score] models\feature_alias_map.json:65 -> "key": "title_domain_similarity_score",
+
+Resets to 0, False, or None identified:
+  *** RESET: scratch\generate_runtime_flow_trace.py:207 -> report_lines.append("Why did the previous Flask trace show URLSimilarityIndex = 0.0 and html_feature_count = 36?")
+  *** RESET: utils\html_feature_extractor.py:574 -> title_matches_domain = 0
+  *** RESET: utils\html_feature_extractor.py:579 -> title_domain_similarity_score = 0.0
+
+STAGE 7: DICTIONARY MUTATIONS AUDIT
+======================================================================
+Total dictionary mutation operations found: 61
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:651 -> combined.update(cls.extract_basic_information(soup))
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:652 -> combined.update(cls.extract_form_features(soup, page_url=page_url))
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:653 -> combined.update(cls.extract_link_features(soup, page_url=page_url))
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:654 -> combined.update(cls.extract_security_script_features(soup))
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:655 -> combined.update(cls.extract_metadata_dom_features(soup, page_url=page_url))
+  *** RELEVANT: [.update] utils\html_feature_extractor.py:724 -> combined_frame.attrs.update({
+  *** RELEVANT: [.update] utils\unified_feature_pipeline.py:340 -> combined.update(self.url_features)
+  *** RELEVANT: [.update] utils\unified_feature_pipeline.py:341 -> combined.update(self.html_features)
+
+STAGE 8 & GOAL: EXACT LINE IDENTIFICATION & FINAL VERIFICATION
+======================================================================
+SUMMARY OF VALUE FLOW:
+  1. HTML Extractor direct output  : 100.0
+  2. Pipeline output               : 100.0
+  3. Combined dict value           : 100.0
+  4. Alias mapping output          : URLSimilarityIndex = 100.0, DomainTitleMatchScore = 100.0
+  5. Top20 DataFrame value         : URLSimilarityIndex = 100.0, DomainTitleMatchScore = 100.0
+  6. Scaled vector values          : [00]=0.7394, [17]=1.0009
+  7. Raw Sigmoid                   : 0.99980289
+  8. Final Prediction              : Legitimate
+
+VERIFICATION OF GOAL:
+  URLSimilarityIndex    = 100.0  [CONFIRMED]
+  DomainTitleMatchScore = 100.0  [CONFIRMED]
+  Raw sigmoid           ≈ 0.9998 [CONFIRMED: 0.99980289]
+  Prediction            = Legitimate [CONFIRMED]
+

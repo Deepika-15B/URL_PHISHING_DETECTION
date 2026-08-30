@@ -1,0 +1,37 @@
+PHIUSIIL DUPLICATE-FREE PREPROCESSING REPORT
+==========================================
+
+Input summary
+-------------
+- Source file: E:\phishing_project_ieee\phishing_detection_ieee\data\phiusiil_dataset\Dataset_HTML.csv
+- Original sample count: 235795
+- Duplicate rows removed (based on all feature columns + label): 1232
+- Final sample count after duplicate removal: 234563
+
+Split summary
+-------------
+- Train size: 164194
+- Validation size: 35184
+- Test size: 35185
+
+Verification
+------------
+- Identical feature vectors across different splits: PASS
+- Duplicate feature vector groups across splits: 0
+- Duplicate URLs across different splits: PASS
+- Duplicate URLs across splits: 0
+
+Label distribution
+------------------
+- train: {0: 69799, 1: 94395}
+- validation: {0: 14957, 1: 20227}
+- test: {0: 14957, 1: 20228}
+
+Notes
+-----
+- Existing processed datasets were not modified.
+- This script created a new version under data/processed_v2/.
+- No model retraining was performed.
+
+End of report
+============

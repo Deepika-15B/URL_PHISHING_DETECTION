@@ -1,0 +1,136 @@
+PHIUSIIL FEATURE SELECTION REPORT - PHASE 2
+==========================================
+
+Dataset overview
+----------------
+- Training samples: 164759
+- Number of features: 51
+- Label distribution: {0: 70364, 1: 94395}
+
+Random Forest configuration
+---------------------------
+- random_state = 42
+- n_estimators = 300
+- n_jobs = -1
+
+Permutation Importance configuration
+-----------------------------------
+- n_repeats = 10
+- random_state = 42
+- n_jobs = -1
+
+Top 10 features
+---------------
+- URLSimilarityIndex
+- NoOfExternalRef
+- LineOfCode
+- NoOfSelfRef
+- IsHTTPS
+- NoOfImage
+- NoOfJS
+- HasSocialNet
+- NoOfCSS
+- HasCopyrightInfo
+Top 20 features
+---------------
+- URLSimilarityIndex
+- NoOfExternalRef
+- LineOfCode
+- NoOfSelfRef
+- IsHTTPS
+- NoOfImage
+- NoOfJS
+- HasSocialNet
+- NoOfCSS
+- HasCopyrightInfo
+- NoOfOtherSpecialCharsInURL
+- LargestLineLength
+- HasDescription
+- NoOfDegitsInURL
+- URLLength
+- IsResponsive
+- DegitRatioInURL
+- DomainTitleMatchScore
+- SpacialCharRatioInURL
+- HasSubmitButton
+Top 30 features
+---------------
+- URLSimilarityIndex
+- NoOfExternalRef
+- LineOfCode
+- NoOfSelfRef
+- IsHTTPS
+- NoOfImage
+- NoOfJS
+- HasSocialNet
+- NoOfCSS
+- HasCopyrightInfo
+- NoOfOtherSpecialCharsInURL
+- LargestLineLength
+- HasDescription
+- NoOfDegitsInURL
+- URLLength
+- IsResponsive
+- DegitRatioInURL
+- DomainTitleMatchScore
+- SpacialCharRatioInURL
+- HasSubmitButton
+- NoOfLettersInURL
+- LetterRatioInURL
+- NoOfSubDomain
+- URLTitleMatchScore
+- NoOfiFrame
+- HasHiddenFields
+- NoOfEmptyRef
+- HasFavicon
+- CharContinuationRate
+Complete ranked feature list
+----------------------------
+1. URLSimilarityIndex | RF=0.241895 | PI=0.265192
+2. NoOfExternalRef | RF=0.146901 | PI=0.000000
+3. LineOfCode | RF=0.106788 | PI=0.000071
+4. NoOfSelfRef | RF=0.093757 | PI=0.000000
+5. IsHTTPS | RF=0.020726 | PI=0.056755
+6. NoOfImage | RF=0.073555 | PI=0.000000
+7. NoOfJS | RF=0.070034 | PI=0.000000
+8. HasSocialNet | RF=0.042313 | PI=0.000000
+9. NoOfCSS | RF=0.041882 | PI=0.000000
+10. HasCopyrightInfo | RF=0.033699 | PI=0.000000
+11. NoOfOtherSpecialCharsInURL | RF=0.024350 | PI=0.000000
+12. LargestLineLength | RF=0.015933 | PI=0.000000
+13. HasDescription | RF=0.014200 | PI=0.000000
+14. NoOfDegitsInURL | RF=0.009172 | PI=0.000000
+15. URLLength | RF=0.008393 | PI=0.000000
+16. IsResponsive | RF=0.007022 | PI=0.000000
+17. DegitRatioInURL | RF=0.006999 | PI=0.000000
+18. DomainTitleMatchScore | RF=0.006749 | PI=0.000000
+19. SpacialCharRatioInURL | RF=0.005958 | PI=0.000000
+20. HasSubmitButton | RF=0.005140 | PI=0.000000
+21. NoOfLettersInURL | RF=0.004823 | PI=0.000000
+22. LetterRatioInURL | RF=0.003241 | PI=0.000000
+23. NoOfSubDomain | RF=0.002194 | PI=0.000000
+24. URLTitleMatchScore | RF=0.002166 | PI=0.000000
+25. NoOfiFrame | RF=0.001991 | PI=0.000000
+26. HasHiddenFields | RF=0.001828 | PI=0.000000
+27. NoOfEmptyRef | RF=0.001796 | PI=0.000000
+28. HasFavicon | RF=0.001515 | PI=0.000000
+29. CharContinuationRate | RF=0.001124 | PI=0.000000
+30. URLCharProb | RF=0.000847 | PI=0.000000
+31. DomainLength | RF=0.000792 | PI=0.000000
+32. HasTitle | RF=0.000605 | PI=0.000000
+33. Robots | RF=0.000556 | PI=0.000000
+34. TLDLegitimateProb | RF=0.000220 | PI=0.000000
+35. NoOfEqualsInURL | RF=0.000201 | PI=0.000000
+36. NoOfQMarkInURL | RF=0.000128 | PI=0.000000
+37. TLD | RF=0.000119 | PI=0.000000
+38. TLDLength | RF=0.000118 | PI=0.000000
+39. Pay | RF=0.000090 | PI=0.000000
+Recommendations for model development
+------------------------------------
+- FNN: prioritize the top 20 features and keep the most stable numeric signals such as URLLength, DomainLength, NoOfSubDomain, HasObfuscation, URLSimilarityIndex, and IsHTTPS.
+- DNN: use the top 20 to 30 features and preserve the structured numeric features that capture URL, domain, and HTML structure.
+- Wide & Deep: combine the top 10 dense numeric features with the remaining engineered features from the processed dataset.
+- TabNet: use the top 20 features and keep the strong structured indicators while avoiding overly sparse or noisy columns.
+
+End of report
+============

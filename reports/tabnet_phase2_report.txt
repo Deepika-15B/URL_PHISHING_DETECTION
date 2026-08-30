@@ -1,0 +1,42 @@
+PHIUSIIL TABNET MODEL REPORT - PHASE 2
+======================================
+
+Data and preprocessing
+----------------------
+- Corrected duplicate-free data: processed_v2 train/validation/test splits
+- Features: persisted Top-20 feature selection
+- StandardScaler fit on train only; validation and test transformed with that scaler
+
+Configuration
+-------------
+- n_d=16, n_a=16, n_steps=5, gamma=1.5, lambda_sparse=1e-4
+- Optimizer: Adam; learning rate: 0.001
+- Batch size: 1024; virtual batch size: 128
+- Maximum epochs: 100; validation early stopping patience: 10
+
+Training summary
+----------------
+- Training time (seconds): 1037.64
+- Epochs trained: 26
+- Number of parameters: 32888
+- Model size (bytes): 148589
+
+Corrected test-set evaluation
+-----------------------------
+- ACCURACY: 0.999687
+- PRECISION: 0.999506
+- RECALL: 0.999951
+- F1: 0.999728
+- ROC AUC: 0.999990
+- Confusion matrix: [[14947, 10], [1, 20227]]
+
+Classification report
+---------------------
+              precision    recall  f1-score   support
+
+    Phishing     0.9999    0.9993    0.9996     14957
+  Legitimate     0.9995    1.0000    0.9997     20228
+
+    accuracy                         0.9997     35185
+   macro avg     0.9997    0.9996    0.9997     35185
+weighted avg     0.9997    0.9997    0.9997     35185

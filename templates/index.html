@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IEEE Phishing Website Detection System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.85);
+      --bg-card-hover: rgba(31, 41, 55, 0.9);
+      --accent-blue: #3b82f6;
+      --accent-teal: #14b8a6;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 9999px;
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    .input-section {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 1rem 1.25rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="url"]:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    button.btn-analyze {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button.btn-analyze:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+    }
+
+    .quick-urls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .chip:hover { background: rgba(255, 255, 255, 0.15); }
+
+    .loading-state {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+      background: var(--bg-card);
+      border-radius: 1rem;
+      border: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .results-grid {
+      display: none;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .col-12 { grid-column: span 12; }
+    .col-8 { grid-column: span 8; }
+    .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; }
+
+    @media (max-width: 900px) {
+      .col-8, .col-6, .col-4 { grid-column: span 12; }
+      .input-group { flex-direction: column; }
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    /* Prediction Card */
+    .prediction-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge-prediction {
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge-legitimate {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .badge-phishing {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-box {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .metric-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    .metric-lbl {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    .threat-bar-container {
+      margin-top: 1rem;
+    }
+
+    .threat-bar-bg {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .threat-bar-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.8s ease-out;
+      border-radius: 6px;
+    }
+
+    .sec-category {
+      margin-bottom: 1.25rem;
+    }
+
+    .sec-cat-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .sec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .sec-table td {
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sec-table td:last-child {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .screenshot-img {
+      width: 100%;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color);
+      max-height: 280px;
+      object-fit: cover;
+    }
+
+    .error-box {
+      display: none;
+      padding: 1.25rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 0.75rem;
+      color: #f87171;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-badge">IEEE Research Project</div>
+      <h1>Phishing Website Detection System</h1>
+      <p>End-to-End Deep Learning Classification & Real-Time HTML Security Intelligence</p>
+    </header>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input type="url" id="urlInput" placeholder="https://example.com" value="https://example.com" required>
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyzeUrl()">
+          <span>Analyze Website</span>
+        </button>
+      </div>
+      <div class="quick-urls">
+        <span>Quick Test:</span>
+        <span class="chip" onclick="setTestUrl('https://example.com')">https://example.com</span>
+        <span class="chip" onclick="setTestUrl('https://google.com')">https://google.com</span>
+        <span class="chip" onclick="setTestUrl('http://neverssl.com')">http://neverssl.com</span>
+        <span class="chip" onclick="setTestUrl('https://httpbin.org/forms/post')">httpbin forms</span>
+      </div>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <h3 id="loadingStatus">Analyzing URL & Extracting Security Intelligence...</h3>
+      <p style="color: var(--text-muted); margin-top: 0.5rem;">Launching Chromium context and running Deep Neural Network inference</p>
+    </div>
+
+    <div class="results-grid" id="resultsGrid">
+      <!-- Unreachable Warning Card -->
+      <div class="card col-12" id="unreachableCard" style="display: none; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+        <div class="card-title" style="color: #f87171; border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
+          <span style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Website could not be reached
+          </span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Reason</div>
+            <ul style="list-style-type: none; padding-left: 0; color: var(--text-main);" id="unreachableReasons">
+              <li style="margin-bottom: 0.25rem;">• DNS resolution failed</li>
+              <li style="margin-bottom: 0.25rem;">• Website unavailable</li>
+              <li>• HTML analysis skipped</li>
+            </ul>
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Prediction</div>
+            <div class="badge-prediction badge-phishing" style="display: inline-block;">PHISHING (High Risk)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prediction & Threat Score Card -->
+      <div class="card col-8" id="predictionCard">
+        <div class="card-title">
+          <span>Prediction & Threat Analysis</span>
+          <span id="riskBadge" style="font-size: 0.85rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">Low Risk</span>
+        </div>
+        
+        <div class="prediction-header">
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">CLASSIFICATION OUTPUT</div>
+            <div id="predictionResult" class="badge-prediction badge-legitimate">Legitimate</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">CONFIDENCE SCORE</div>
+            <div id="confidenceVal" style="font-size: 2rem; font-weight: 800; font-family: var(--font-mono);">99.94%</div>
+          </div>
+        </div>
+
+        <div class="threat-bar-container">
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600;">
+            <span>Threat Score (Phishing Likelihood)</span>
+            <span id="threatScoreVal" style="font-family: var(--font-mono);">8.5 / 100</span>
+          </div>
+          <div class="threat-bar-bg">
+            <div id="threatBarFill" class="threat-bar-fill" style="width: 8.5%; background: var(--accent-green);"></div>
+          </div>
+        </div>
+
+        <div class="metrics-row" style="margin-top: 1.5rem;">
+          <div class="metric-box">
+            <div id="mExtractTime" class="metric-val" style="color: var(--accent-blue);">0.85s</div>
+            <div class="metric-lbl">Extraction Time</div>
+          </div>
+          <div class="metric-box">
+            <div id="mPredTime" class="metric-val" style="color: var(--accent-teal);">0.01s</div>
+            <div class="metric-lbl">Prediction Time</div>
+          </div>
+          <div class="metric-box">
+            <div id="mTotalTime" class="metric-val" style="color: var(--accent-amber);">0.86s</div>
+            <div class="metric-lbl">Total Processing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Preview Card -->
+      <div class="card col-4" id="screenshotCard">
+        <div class="card-title">Browser Screenshot</div>
+        <div id="screenshotContainer">
+          <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 3rem 0;">No screenshot captured</p>
+        </div>
+      </div>
+
+      <!-- HTML Security Intelligence Report -->
+      <div class="card col-8" id="htmlSecurityCard">
+        <div class="card-title">HTML Security Intelligence Report</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <!-- Forms Category -->
+          <div class="sec-category">
+            <div class="sec-cat-title">Forms & Credentials</div>
+            <table class="sec-table">
+              <tr><td>Form Count</td><td id="fForms">0</td></tr>
+              <tr><td>Password Fields</td><td id="fPasswords">0</td></tr>
+              <tr><td>External Form Action</td><td id="fExtAction">No</td></tr>
+              <tr><td>Hidden Inputs</td><td id="fHiddenInputs">0</td></tr>
+            </table>
+          </div>
+
+          <!-- Links Category -->
+          <div class="sec-category">
+            <div class="sec-cat-title">Link Analysis</div>
+            <table class="sec-table">
+              <tr><td>External Links</td><td id="lExtLinks">0</td></tr>
+              <tr><td>Internal Links</td><td id="lIntLinks">0</td></tr>
+              <tr><td>External Link Ratio</td><td id="lExtRatio">0.0</td></tr>
+              <tr><td>Suspicious Anchors</td><td id="lSuspAnchors">0</td></tr>
+            </table>
+          </div>
+
+          <!-- Scripts Category -->
+          <div class="sec-category">
+            <div class="sec-cat-title">Scripts & Obfuscation</div>
+            <table class="sec-table">
+              <tr><td>Obfuscated JavaScript</td><td id="sObfuscated">Not Detected</td></tr>
+              <tr><td>iFrame Count</td><td id="sIframes">0</td></tr>
+              <tr><td>Hidden iFrames</td><td id="sHiddenIframes">0</td></tr>
+              <tr><td>Popup Script</td><td id="sPopup">No</td></tr>
+            </table>
+          </div>
+
+          <!-- Metadata Category -->
+          <div class="sec-category">
+            <div class="sec-cat-title">DOM Metadata & Structure</div>
+            <table class="sec-table">
+              <tr><td>External Favicon</td><td id="mFavicon">No</td></tr>
+              <tr><td>Meta Refresh</td><td id="mRefresh">No</td></tr>
+              <tr><td>DOM Tree Depth</td><td id="mDomDepth">0</td></tr>
+              <tr><td>Total DOM Elements</td><td id="mDomElements">0</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Information & Summary -->
+      <div class="card col-4" id="systemInfoCard">
+        <div class="card-title">System Information</div>
+        <table class="sec-table" style="margin-top: 0.5rem;">
+          <tr><td>Browser Status</td><td id="sysBrowser">Active</td></tr>
+          <tr><td>URL Feature Count</td><td id="sysUrlFeats">101</td></tr>
+          <tr><td>HTML Feature Count</td><td id="sysHtmlFeats">35</td></tr>
+          <tr><td>Trained Feature Subset</td><td id="sysSubset">Top 20 URL</td></tr>
+          <tr><td>FNN Architecture</td><td id="sysModel">Dense (64-32-1)</td></tr>
+          <tr><td>Scaler Type</td><td id="sysScaler">StandardScaler</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTestUrl(url) {
+      document.getElementById('urlInput').value = url;
+    }
+
+    async function analyzeUrl() {
+      const urlInput = document.getElementById('urlInput').value.trim();
+      const errorBox = document.getElementById('errorBox');
+      const loadingState = document.getElementById('loadingState');
+      const resultsGrid = document.getElementById('resultsGrid');
+
+      errorBox.style.display = 'none';
+      if (!urlInput) {
+        errorBox.innerText = 'Please enter a URL to analyze.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      loadingState.style.display = 'block';
+      resultsGrid.style.display = 'none';
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlInput })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'unreachable') {
+          renderUnreachable(data);
+          return;
+        }
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Failed to process request');
+        }
+
+        renderResults(data);
+      } catch (err) {
+        errorBox.innerText = 'Error: ' + err.message;
+        errorBox.style.display = 'block';
+      } finally {
+        loadingState.style.display = 'none';
+      }
+    }
+
+    function renderUnreachable(data) {
+      // 1. Clear any previous prediction state so old screenshots and predictions do not remain visible
+      document.getElementById('screenshotContainer').innerHTML = '';
+      document.getElementById('predictionResult').innerText = 'PHISHING';
+      document.getElementById('predictionResult').className = 'badge-prediction badge-phishing';
+      document.getElementById('confidenceVal').innerText = '100%';
+      document.getElementById('threatScoreVal').innerText = '100 / 100';
+      document.getElementById('threatBarFill').style.width = '100%';
+      document.getElementById('threatBarFill').style.background = 'var(--accent-red)';
+      document.getElementById('riskBadge').innerText = 'High Risk';
+      document.getElementById('riskBadge').style.background = 'rgba(239, 68, 68, 0.2)';
+      document.getElementById('riskBadge').style.color = '#f87171';
+      
+      document.getElementById('mExtractTime').innerText = '0s';
+      document.getElementById('mPredTime').innerText = '0s';
+      document.getElementById('mTotalTime').innerText = '0s';
+
+      // 2. Hide all existing prediction cards and show ONLY the unreachable warning card
+      const resultsGrid = document.getElementById('resultsGrid');
+      resultsGrid.style.display = 'grid';
+      
+      document.getElementById('unreachableCard').style.display = 'block';
+      document.getElementById('predictionCard').style.display = 'none';
+      document.getElementById('screenshotCard').style.display = 'none';
+      document.getElementById('htmlSecurityCard').style.display = 'none';
+      document.getElementById('systemInfoCard').style.display = 'none';
+
+      // 3. Render the unreachable reasons
+      if (data.reason && Array.isArray(data.reason)) {
+        const ul = document.getElementById('unreachableReasons');
+        ul.innerHTML = '';
+        data.reason.forEach(r => {
+          const li = document.createElement('li');
+          li.style.marginBottom = '0.25rem';
+          li.innerText = '• ' + r;
+          ul.appendChild(li);
+        });
+      }
+    }
+
+    function renderResults(data) {
+      const resultsGrid = document.getElementById('resultsGrid');
+      resultsGrid.style.display = 'grid';
+
+      document.getElementById('unreachableCard').style.display = 'none';
+      document.getElementById('predictionCard').style.display = 'block';
+      document.getElementById('screenshotCard').style.display = 'block';
+      document.getElementById('htmlSecurityCard').style.display = 'block';
+      document.getElementById('systemInfoCard').style.display = 'block';
+
+      // Prediction Label & Badge
+      const predRes = document.getElementById('predictionResult');
+      predRes.innerText = data.prediction;
+      predRes.className = 'badge-prediction ' + (data.prediction === 'Legitimate' ? 'badge-legitimate' : 'badge-phishing');
+
+      document.getElementById('confidenceVal').innerText = data.confidence + '%';
+      
+      // Threat Score
+      const threatScore = data.threat_score;
+      document.getElementById('threatScoreVal').innerText = threatScore + ' / 100';
+      const threatFill = document.getElementById('threatBarFill');
+      threatFill.style.width = threatScore + '%';
+      
+      if (threatScore >= 80) {
+        threatFill.style.background = 'var(--accent-red)';
+      } else if (threatScore >= 40) {
+        threatFill.style.background = 'var(--accent-amber)';
+      } else {
+        threatFill.style.background = 'var(--accent-green)';
+      }
+
+      // Risk Level
+      const riskBadge = document.getElementById('riskBadge');
+      riskBadge.innerText = data.risk_level + ' Risk';
+      if (data.risk_level === 'High') {
+        riskBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+        riskBadge.style.color = '#f87171';
+      } else if (data.risk_level === 'Medium') {
+        riskBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+        riskBadge.style.color = '#fbbf24';
+      } else {
+        riskBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+        riskBadge.style.color = '#34d399';
+      }
+
+      // Timing
+      document.getElementById('mExtractTime').innerText = data.system_info.extraction_time + 's';
+      document.getElementById('mPredTime').innerText = data.system_info.prediction_time + 's';
+      document.getElementById('mTotalTime').innerText = data.system_info.total_processing_time + 's';
+
+      // Screenshot
+      const ssContainer = document.getElementById('screenshotContainer');
+      if (data.screenshot_path) {
+        ssContainer.innerHTML = `<img src="${data.screenshot_path}" class="screenshot-img" alt="Captured Website Screenshot">`;
+      } else {
+        ssContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 3rem 0;">No screenshot captured</p>`;
+      }
+
+      // HTML Report
+      const h = data.html_security_report;
+      document.getElementById('fForms').innerText = h.forms.number_of_forms;
+      document.getElementById('fPasswords').innerText = h.forms.num_password_inputs;
+      document.getElementById('fExtAction').innerText = h.forms.has_external_form_action;
+      document.getElementById('fHiddenInputs').innerText = h.forms.num_hidden_inputs;
+
+      document.getElementById('lExtLinks').innerText = h.links.num_external_links;
+      document.getElementById('lIntLinks').innerText = h.links.num_internal_links;
+      document.getElementById('lExtRatio').innerText = h.links.ratio_external_links;
+      document.getElementById('lSuspAnchors').innerText = h.links.num_suspicious_anchor_text;
+
+      document.getElementById('sObfuscated').innerText = h.scripts.has_obfuscated_js;
+      document.getElementById('sIframes').innerText = h.scripts.num_iframes;
+      document.getElementById('sHiddenIframes').innerText = h.scripts.num_hidden_iframes;
+      document.getElementById('sPopup').innerText = h.scripts.has_popup_script;
+
+      document.getElementById('mFavicon').innerText = h.metadata.has_external_favicon;
+      document.getElementById('mRefresh').innerText = h.metadata.has_meta_refresh;
+      document.getElementById('mDomDepth').innerText = h.metadata.dom_depth;
+      document.getElementById('mDomElements').innerText = h.metadata.num_total_dom_elements;
+
+      // System Info
+      document.getElementById('sysBrowser').innerText = data.system_info.browser_status;
+      document.getElementById('sysUrlFeats').innerText = data.system_info.url_feature_count;
+      document.getElementById('sysHtmlFeats').innerText = data.system_info.html_feature_count;
+    }
+  </script>
+</body>
+</html>

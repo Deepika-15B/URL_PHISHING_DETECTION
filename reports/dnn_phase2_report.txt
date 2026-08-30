@@ -1,0 +1,51 @@
+PHIUSIIL DNN MODEL REPORT - PHASE 2
+===================================
+
+Model architecture
+-----------------
+- Input layer: Dense input shape = 20
+- Hidden layer 1: Dense(128) + BatchNormalization + ReLU + Dropout(0.30)
+- Hidden layer 2: Dense(64) + BatchNormalization + ReLU + Dropout(0.30)
+- Hidden layer 3: Dense(32) + BatchNormalization + ReLU + Dropout(0.20)
+- Output layer: Dense(1, Sigmoid)
+
+Hyperparameters
+---------------
+- Optimizer: Adam
+- Learning rate: 0.0005
+- Loss: Binary Crossentropy
+- Batch size: 32
+- Maximum epochs: 100
+- EarlyStopping monitor: val_loss, patience: 8, restore_best_weights: True
+- ReduceLROnPlateau monitor: val_loss, factor: 0.5, patience: 3, min_lr: 1e-6
+
+Training summary
+----------------
+- Training time (seconds): 234.10
+- Epochs completed: 22
+- Trainable parameters: 13953
+
+Evaluation metrics
+------------------
+- Accuracy: 1.0000
+- Precision: 1.0000
+- Recall: 1.0000
+- F1-score: 1.0000
+- ROC-AUC: 1.0000
+- Confusion matrix:
+  * [14956, 1]
+  * [0, 20228]
+
+Classification report
+---------------------
+-               precision    recall  f1-score   support
+- 
+-     Phishing     1.0000    0.9999    1.0000     14957
+-   Legitimate     1.0000    1.0000    1.0000     20228
+- 
+-     accuracy                         1.0000     35185
+-    macro avg     1.0000    1.0000    1.0000     35185
+- weighted avg     1.0000    1.0000    1.0000     35185
+
+End of report
+============

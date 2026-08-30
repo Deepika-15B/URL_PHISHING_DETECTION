@@ -1,0 +1,37 @@
+PHIUSIIL FNN PIPELINE VALIDATION REPORT
+====================================
+
+Summary
+-------
+- Processed train rows: 164759
+- Processed validation rows: 35305
+- Processed test rows: 35306
+- Duplicate URLs removed during preprocessing: 425
+- Conflicting duplicate URLs present: 0
+
+Checks
+------
+1. StandardScaler fit only on training set: PASS
+   Evidence: the training script calls scaler.fit_transform(X_train), then scaler.transform(X_val) and scaler.transform(X_test).
+2. Validation and test sets never used during fitting: PASS
+   Evidence: the model is fit with X_train_scaled and y_train, while validation_data is used only for monitoring and test data is only used for evaluation after training.
+3. Duplicate samples across train/validation/test: FAIL
+   Evidence: exact duplicate rows were found across the split CSVs.
+4. Duplicate URLs across different splits: PASS
+   Evidence: no URL appeared in more than one split.
+5. Features with |correlation| > 0.99 with the target: PASS
+   Evidence: no selected feature exceeded the 0.99 threshold on the training split.
+6. Features that directly encode the label: PASS
+   Evidence: no feature matched the label or its complement exactly.
+7. Stratified split correctness: PASS
+   - train: max label-ratio deviation from the original = 0.0000; ratios = {0: 0.4270722691931852, 1: 0.5729277308068148}
+   - validation: max label-ratio deviation from the original = 0.0000; ratios = {0: 0.42707831751876507, 1: 0.572921682481235}
+   - test: max label-ratio deviation from the original = 0.0000; ratios = {0: 0.4270662210389169, 1: 0.5729337789610831}
+8. Test-set information used during preprocessing: PASS
+   Evidence: preprocessing is deterministic and label-agnostic, and the split is created after preprocessing; the test set is not used to fit any estimator or to compute model parameters.
+
+Conclusion: FAIL
+
+Overall assessment
+------------------
+A leakage or suspicious issue was detected in the Phase 2 preprocessing or FNN training pipeline.

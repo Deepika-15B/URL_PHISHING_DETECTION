@@ -1,0 +1,27 @@
+IEEE PHISHING DETECTION - TOP 20 FNN TRAINING REPORT
+
+Dataset size: 57,405
+Training samples: 45,924
+Validation samples: 11,481
+Input features (20): time_domain_activation, directory_length, length_url, ttl_hostname, qty_dot_domain, asn_ip, time_response, time_domain_expiration, tls_ssl_certificate, qty_mx_servers, qty_vowels_domain, qty_nameservers, domain_length, qty_dot_url, qty_slash_url, qty_ip_resolved, qty_redirects, qty_hyphen_url, file_length, qty_hyphen_directory
+Split: train_test_split(test_size=0.20, stratify=y, random_state=42)
+Architecture: Dense(64) -> Dropout(0.20) -> Dense(32) -> Dropout(0.20) -> Dense(1)
+Optimizer: Adam (learning_rate=0.0005)
+Loss: Binary Crossentropy
+Metrics: Accuracy, Precision, Recall, AUC
+Training configuration: epochs=100, batch_size=32
+EarlyStopping: monitor=val_loss, patience=8, restore_best_weights=True
+ReduceLROnPlateau: monitor=val_loss, factor=0.5, patience=3, min_lr=1e-6, verbose=1
+Epochs actually trained: 100
+ReduceLROnPlateau activated: True
+EarlyStopping triggered: False
+Training time: 196.40 seconds
+
+Accuracy: 0.930233
+Precision: 0.934262
+Recall: 0.934415
+F1 Score: 0.934339
+ROC-AUC: 0.982566
+Confusion matrix:
+[[4981  401]
+ [ 400 5699]]

@@ -1,0 +1,25 @@
+========================================================================
+IEEE PHISHING DETECTION PROJECT — UNIFIED HYBRID EXTRACTION REPORT
+Generated : 2026-07-31 14:31:49 UTC
+URLs processed : 1
+========================================================================
+
+[1/1] https://www.google.com
+------------------------------------------------------------------------
+  Timestamp            : 2026-07-31T14:31:49.907317+00:00
+  URL extraction       : FAILED  (0.000s, 101 features)
+  HTML extraction      : FAILED  (0.000s, 35 features)
+  Total elapsed        : 0.000s
+  Fallbacks / Errors:
+  [URL]  URL extraction failed: No module named 'utils'
+  [HTML] HTML extraction disabled
+  HTML Security Signals : all zero / extraction failed
+
+========================================================================
+ARCHITECTURE NOTE
+------------------------------------------------------------------------
+URL features and HTML features are stored separately.
+The existing trained FNN/DNN/Wide&Deep/TabNet models continue to
+receive ONLY their original training feature subset via inference.py.
+This report is for analysis and future hybrid model training ONLY.
+========================================================================
