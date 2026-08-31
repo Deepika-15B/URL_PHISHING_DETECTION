@@ -210,8 +210,6 @@ class HTMLFeatureExtractor:
         try:
             return BeautifulSoup(html, "lxml")
         except Exception:
-            import traceback
-            traceback.print_exc()
             return BeautifulSoup(html, "html.parser")
 
     @staticmethod
@@ -779,6 +777,239 @@ class HTMLFeatureExtractor:
 
         return _raw_return
 
+    @staticmethod
+    def compute_domain_title_match_score(page_url: str, raw_title: str) -> float:
+        """Calculate DomainTitleMatchScore using the existing similarity implementation.
+        
+        Isolates similarity calculation for dataset-level validation.
+        """
+        if not page_url or not raw_title:
+            return 0.0
+
+        import re
+        def normalize_str(s: str) -> str:
+            if not s:
+                return ""
+            s = s.lower()
+            s = re.sub(r'[|,;:\-_/]', ' ', s)
+            s = re.sub(r'\s+', ' ', s).strip()
+            return s
+
+        brand_name = ""
+        try:
+            import tldextract
+            ext = tldextract.extract(page_url)
+            if ext.domain:
+                brand_name = ext.domain.lower()
+        except Exception:
+            pass
+
+        if not brand_name:
+            try:
+                from urllib.parse import urlparse
+                host = (urlparse(page_url.strip()).hostname or "").lower()
+                parts = host.split('.')
+                brand_name = parts[-2] if len(parts) >= 2 else host
+            except Exception:
+                pass
+
+        normalized_title = normalize_str(raw_title)
+        normalized_brand = normalize_str(brand_name)
+
+        if not normalized_brand or not normalized_title:
+            return 0.0
+
+        if normalized_brand in normalized_title:
+            return 100.0
+
+        import difflib
+        match = difflib.SequenceMatcher(None, normalized_brand, normalized_title).find_longest_match(0, len(brand_name), 0, len(normalized_title))
+        if brand_name:
+            return round((match.size / len(brand_name)) * 100.0, 2)
+        return 0.0
+
+    @classmethod
+    def extract_phiusiil_html_features(cls, soup: BeautifulSoup, raw_html: str, page_url: str = "") -> dict[str, Any]:
+        """Extract the specific 13 HTML features required by the 18 leakage-free feature set.
+
+        Features extracted:
+        - LineOfCode: Count lines in retrieved raw HTML source using newline splitting.
+        - LargestLineLength: Maximum character length of a raw HTML line.
+        - NoOfImage: Count of image elements (<img tags>).
+        - NoOfJS: Count of external JavaScript files (<script src=...>).
+        - NoOfCSS: Count of external CSS files (<link rel="stylesheet">).
+        - HasDescription: 1 if meta description exists and is non-empty, otherwise 0.
+        - IsResponsive: 1 if viewport meta tag exists, otherwise 0.
+        - HasSubmitButton: 1 if at least one submit input/button exists, otherwise 0.
+        - HasSocialNet: 1 if page contains links/resources belonging to common social networks, otherwise 0.
+        - HasCopyrightInfo: 1 if page text or HTML contains ©, &copy;, &#169;, or "copyright", otherwise 0.
+        - NoOfExternalRef: Count of external resource references across HTML tags.
+        - NoOfSelfRef: Count of internal/self references across HTML tags.
+        - DomainTitleMatchScore: Substring/SequenceMatcher similarity between domain brand name and page title.
+        """
+        if soup is None:
+            raise ValueError("A parsed BeautifulSoup object is required.")
+
+        raw_html_str = raw_html if isinstance(raw_html, str) else ""
+
+        # 1. LineOfCode: count lines in the retrieved raw HTML source using newline splitting
+        lines = raw_html_str.split('\n') if raw_html_str else []
+        line_of_code = len(lines)
+
+        # 2. LargestLineLength: calculate maximum character length of a raw HTML line
+        largest_line_length = max((len(line) for line in lines), default=0)
+
+        # 3. NoOfImage: map from existing image count
+        no_of_image = len(soup.find_all("img"))
+
+        # 4. NoOfJS: map from existing JavaScript file count (script tags with src attribute)
+        no_of_js = len(soup.find_all("script", src=True))
+
+        # 5. NoOfCSS: map from existing CSS file count (link tags with rel stylesheet)
+        def _is_stylesheet(rel_val):
+            if not rel_val:
+                return False
+            if isinstance(rel_val, list):
+                rel_val = " ".join(rel_val)
+            return "stylesheet" in str(rel_val).lower()
+
+        no_of_css = len(soup.find_all("link", rel=_is_stylesheet))
+
+        # 6. HasDescription: return 1 if a meta description exists and is non-empty, otherwise 0
+        desc_tag = soup.find("meta", attrs={"name": lambda v: isinstance(v, str) and v.lower() == "description"})
+        meta_desc = desc_tag.get("content", "").strip() if desc_tag and desc_tag.get("content") else ""
+        has_description = 1 if bool(meta_desc) else 0
+
+        # 7. IsResponsive: return 1 if a viewport meta tag exists, otherwise 0
+        viewport_tag = soup.find("meta", attrs={"name": lambda v: isinstance(v, str) and v.lower() == "viewport"})
+        is_responsive = 1 if viewport_tag is not None else 0
+
+        # 8. HasSubmitButton: return 1 if at least one submit input/button exists, otherwise 0
+        has_submit_button = 0
+        for inp in soup.find_all("input"):
+            itype = str(inp.get("type", "")).strip().lower()
+            if itype in ("submit", "image"):
+                has_submit_button = 1
+                break
+        if not has_submit_button:
+            for btn in soup.find_all("button"):
+                btype = str(btn.get("type", "")).strip().lower()
+                if btype in ("submit", ""):
+                    has_submit_button = 1
+                    break
+
+        # 9. HasSocialNet: return 1 if page contains links/resources belonging to common social-network domains; otherwise 0
+        has_social_net = 0
+        social_domains = {
+            "facebook.com", "fb.com", "twitter.com", "x.com", "linkedin.com",
+            "instagram.com", "youtube.com", "pinterest.com", "tiktok.com",
+            "reddit.com", "snapchat.com", "whatsapp.com", "t.me", "telegram.org",
+            "tumblr.com", "threads.net"
+        }
+        for tag in soup.find_all(["a", "link", "script", "img", "iframe", "source", "embed"]):
+            url_attr = tag.get("href") or tag.get("src")
+            if url_attr:
+                try:
+                    from urllib.parse import urlparse
+                    host = (urlparse(str(url_attr).strip()).hostname or "").lower()
+                    if host and any(host == sd or host.endswith("." + sd) for sd in social_domains):
+                        has_social_net = 1
+                        break
+                except Exception:
+                    pass
+
+        # 10. HasCopyrightInfo: return 1 if page text contains ©, &copy;, &#169;, or "copyright"; otherwise 0
+        has_copyright_info = 0
+        text_content = soup.get_text().lower() if hasattr(soup, "get_text") else ""
+        raw_html_lower = raw_html_str.lower()
+        if "©" in text_content or "©" in raw_html_lower or "&copy;" in raw_html_lower or "&#169;" in raw_html_lower or "copyright" in text_content:
+            has_copyright_info = 1
+
+        # Determine host and registered domain of the page
+        page_domain = ""
+        page_host = ""
+        if page_url and isinstance(page_url, str):
+            try:
+                import tldextract
+                ext = tldextract.extract(page_url.strip())
+                page_domain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
+                from urllib.parse import urlparse
+                page_host = (urlparse(page_url.strip()).hostname or "").lower()
+            except Exception:
+                try:
+                    from urllib.parse import urlparse
+                    page_host = (urlparse(page_url.strip()).hostname or "").lower()
+                    parts = page_host.split(".")
+                    page_domain = ".".join(parts[-2:]) if len(parts) >= 2 else page_host
+                except Exception:
+                    pass
+
+        # 11. NoOfExternalRef & 12. NoOfSelfRef:
+        # Count resource references across relevant HTML tags: a, link, script, img, iframe, form, video, audio, source, embed, object
+        # Definition:
+        # - Self/Internal: Relative URL, fragment (#), inline protocol (javascript:, about:blank, mailto:, tel:, data:), or URL on the same registered domain/host.
+        # - External: Resource located on a domain different from the page's registered domain.
+        no_of_external_ref = 0
+        no_of_self_ref = 0
+
+        for tag in soup.find_all(["a", "link", "script", "img", "iframe", "form", "video", "audio", "source", "embed", "object"]):
+            url_attr = tag.get("href") or tag.get("src") or tag.get("action") or tag.get("data")
+            if url_attr is not None:
+                url_str = str(url_attr).strip()
+                url_lower = url_str.lower()
+                if not url_str or url_str == "#" or url_lower.startswith(("javascript:", "about:blank", "mailto:", "tel:", "data:", "#")):
+                    no_of_self_ref += 1
+                else:
+                    try:
+                        from urllib.parse import urlparse
+                        parsed = urlparse(url_str)
+                        host = (parsed.hostname or "").lower()
+                        if not parsed.scheme and not host:
+                            no_of_self_ref += 1
+                        elif host:
+                            try:
+                                import tldextract
+                                ref_ext = tldextract.extract(host)
+                                ref_domain = f"{ref_ext.domain}.{ref_ext.suffix}" if ref_ext.suffix else ref_ext.domain
+                            except Exception:
+                                parts = host.split(".")
+                                ref_domain = ".".join(parts[-2:]) if len(parts) >= 2 else host
+
+                            if page_domain and ref_domain == page_domain:
+                                no_of_self_ref += 1
+                            elif not page_domain and page_host and host == page_host:
+                                no_of_self_ref += 1
+                            else:
+                                no_of_external_ref += 1
+                        else:
+                            no_of_self_ref += 1
+                    except Exception:
+                        no_of_self_ref += 1
+
+        # 13. DomainTitleMatchScore:
+        raw_title = getattr(cls, '_last_page_title', None)
+        if not raw_title and soup.title:
+            raw_title = soup.title.get_text(" ", strip=True)
+        raw_title = raw_title or ""
+
+        domain_title_match_score = cls.compute_domain_title_match_score(page_url, raw_title)
+
+        return {
+            "LineOfCode": line_of_code,
+            "LargestLineLength": largest_line_length,
+            "NoOfImage": no_of_image,
+            "NoOfJS": no_of_js,
+            "NoOfCSS": no_of_css,
+            "HasDescription": has_description,
+            "IsResponsive": is_responsive,
+            "HasSubmitButton": has_submit_button,
+            "HasSocialNet": has_social_net,
+            "HasCopyrightInfo": has_copyright_info,
+            "NoOfExternalRef": no_of_external_ref,
+            "NoOfSelfRef": no_of_self_ref,
+            "DomainTitleMatchScore": float(domain_title_match_score),
+        }
+
     @classmethod
     def extract_all_html_features(cls, soup: BeautifulSoup, page_url: str = "") -> dict[str, Any]:
         """Consolidate features from all HTML submodules into a single dictionary.
@@ -798,13 +1029,13 @@ class HTMLFeatureExtractor:
         if soup is None:
             raise ValueError("A parsed BeautifulSoup object is required.")
 
-        combined: dict[str, Any] = {}
-        combined.update(cls.extract_basic_information(soup))
-        combined.update(cls.extract_form_features(soup, page_url=page_url))
-        combined.update(cls.extract_link_features(soup, page_url=page_url))
-        combined.update(cls.extract_security_script_features(soup))
-        combined.update(cls.extract_metadata_dom_features(soup, page_url=page_url))
-        return combined
+        all_features = {}
+        all_features.update(cls.extract_basic_information(soup))
+        all_features.update(cls.extract_form_features(soup, page_url))
+        all_features.update(cls.extract_link_features(soup, page_url))
+        all_features.update(cls.extract_security_script_features(soup))
+        all_features.update(cls.extract_metadata_dom_features(soup, page_url))
+        return all_features
 
     def close_browser(self) -> None:
 

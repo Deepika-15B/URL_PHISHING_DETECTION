@@ -204,6 +204,61 @@ def extract_network_features(parsed, dns_values: dict[str, float], status: list[
         return {"asn_ip": np.nan}
 
 
+def extract_phiusiil_url_features(url: str) -> dict[str, float | int]:
+    """Extract exact URL metrics required by PhiUSIIL dataset definition.
+
+    Special Character Definitions:
+    - Standard 17 URL Special Characters:
+      {'.', '-', '_', '/', '?', '=', '@', '&', '!', ' ', '~', ',', '+', '*', '#', '$', '%'}
+    - Other Special Characters (NoOfOtherSpecialCharsInURL):
+      Any character in the raw URL that is NOT alphanumeric and NOT in the standard 17 special characters set
+      (e.g., ':', ';', '<', '>', '(', ')', '{', '}', '[', ']', '|', '\\', '^', '"', ''', etc.).
+    - Special Character Ratio (SpacialCharRatioInURL):
+      Total count of all non-alphanumeric characters in the raw URL divided by URLLength.
+      Handled safely when URLLength is 0.
+
+    Parameters
+    ----------
+    url : str
+        Target raw URL string.
+
+    Returns
+    -------
+    dict[str, float | int]
+        Dictionary containing URLLength, NoOfDegitsInURL, DegitRatioInURL,
+        NoOfOtherSpecialCharsInURL, and SpacialCharRatioInURL.
+    """
+    if not isinstance(url, str):
+        url = str(url or "")
+
+    url_length = len(url)
+    num_digits = sum(1 for c in url if c.isdigit())
+    degit_ratio = (num_digits / url_length) if url_length > 0 else 0.0
+
+    # 17 standard special characters tracked in URL datasets:
+    standard_specials = {
+        '.', '-', '_', '/', '?', '=', '@', '&', '!', ' ',
+        '~', ',', '+', '*', '#', '$', '%'
+    }
+
+    # Characters counted as OtherSpecialChars: non-alphanumeric and not in standard_specials
+    num_other_special_chars = sum(
+        1 for c in url if not c.isalnum() and c not in standard_specials
+    )
+
+    # Total special characters (all non-alphanumeric characters)
+    num_all_special_chars = sum(1 for c in url if not c.isalnum())
+    spacial_char_ratio = (num_all_special_chars / url_length) if url_length > 0 else 0.0
+
+    return {
+        "URLLength": url_length,
+        "NoOfDegitsInURL": num_digits,
+        "DegitRatioInURL": float(degit_ratio),
+        "NoOfOtherSpecialCharsInURL": num_other_special_chars,
+        "SpacialCharRatioInURL": float(spacial_char_ratio),
+    }
+
+
 def extract_all_features(url: str) -> pd.DataFrame:
     """Extract every category and dynamically assemble one schema-ordered dataframe row."""
     started = time.perf_counter(); normalised = _normalise_url(url); parsed = urlparse(normalised); status: list[str] = []
@@ -211,12 +266,21 @@ def extract_all_features(url: str) -> pd.DataFrame:
     with _SCHEMA_PATH.open("rb") as file: schema = pickle.load(file)
     dns_values = extract_dns_features(parsed, status)
     values: dict[str, float] = {}
+    
+    # Add new PhiUSIIL URL features
+    values.update(extract_phiusiil_url_features(url))
+    
     for category in [extract_url_structure_features(normalised, parsed), extract_domain_features(normalised, parsed), extract_directory_features(parsed), extract_file_features(parsed), extract_query_features(parsed), extract_security_features(parsed, status), dns_values, extract_whois_features(parsed, status), extract_http_features(normalised, status), extract_network_features(parsed, dns_values, status)]: values.update(category)
     # Google-index fields are in the historical schema but require prohibited scraping; explicit NaN fallback is recorded.
     values.setdefault("url_google_index", np.nan); values.setdefault("domain_google_index", np.nan); status.append("Index fallbacks (url_google_index/domain_google_index=NaN): live search scraping not performed")
     missing = [name for name in schema if name not in values]
     for name in missing: values[name] = np.nan; status.append(f"Schema fallback ({name}=NaN): no extractor mapping")
-    frame = pd.DataFrame([[values[name] for name in schema]], columns=schema)
+    
+    # Ensure all original schema columns are output, plus our new features
+    # Since the new features might not be in the old schema, we just append them to the frame attrs or columns
+    output_columns = list(schema) + [k for k in values.keys() if k not in schema]
+    frame = pd.DataFrame([[values.get(name, np.nan) for name in output_columns]], columns=output_columns)
+    
     dns_ok = not any("DNS fallback" in s or "A-record fallback" in s for s in status)
     whois_ok = not any("WHOIS fallback" in s for s in status)
     frame.attrs.update({

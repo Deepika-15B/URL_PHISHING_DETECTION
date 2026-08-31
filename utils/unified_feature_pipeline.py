@@ -241,6 +241,8 @@ class HybridResult:
     html_features: dict[str, Any]      # numeric keys only
     html_diagnostics: dict[str, str]   # page_title, meta_description
     metadata: dict[str, Any]
+    raw_html: str = ""
+    soup: Any = None
 
     # ── Convenience constructors ───────────────────────────────────────────
 
@@ -367,6 +369,11 @@ class HybridResult:
         """Alias for export_as_unified_record() for backwards compatibility."""
         return self.export_as_unified_record()
 
+    def extract_18_features(self) -> dict[str, Any]:
+        """Extract the exact 18 leakage-free features using PhiUSIILFeatureAdapter."""
+        adapter = PhiUSIILFeatureAdapter(self.url, self.raw_html, self.soup)
+        return adapter.extract()
+
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
 
@@ -477,7 +484,7 @@ class UnifiedFeaturePipeline:
 
     def extract_html_features(
         self, url: str
-    ) -> tuple[dict[str, Any], dict[str, str], list[str], float, bool]:
+    ) -> tuple[dict[str, Any], dict[str, str], list[str], float, bool, str, Any]:
         """Render the URL with Chromium and extract all HTML feature signals.
 
         Returns
@@ -488,11 +495,11 @@ class UnifiedFeaturePipeline:
         zero_strings = {"page_title": "", "meta_description": ""}
 
         if not self.enable_html:
-            return zero_numeric, zero_strings, ["HTML extraction disabled"], 0.0, False
+            return zero_numeric, zero_strings, ["HTML extraction disabled"], 0.0, False, "", None
 
         if self._html_extractor is None:
             err = getattr(self, "_html_browser_error", "Browser not launched")
-            return zero_numeric, zero_strings, [f"HTML skipped: {err}"], 0.0, False
+            return zero_numeric, zero_strings, [f"HTML skipped: {err}"], 0.0, False, "", None
 
         t0 = time.perf_counter()
         status: list[str] = []
@@ -539,7 +546,7 @@ class UnifiedFeaturePipeline:
             print(f"html_numeric['title_matches_domain']:          {numeric.get('title_matches_domain')}")
             print("======================================")
 
-            return numeric, diagnostics, status, elapsed, True
+            return numeric, diagnostics, status, elapsed, True, html_str, soup
 
         except Exception as exc:
             import traceback
@@ -570,7 +577,7 @@ class UnifiedFeaturePipeline:
         timestamp = datetime.now(timezone.utc).isoformat()
 
         url_feats, url_status, url_secs, url_ok, url_flags = self.extract_url_features(url)
-        html_numeric, html_diag, html_status, html_secs, html_ok = self.extract_html_features(url)
+        html_numeric, html_diag, html_status, html_secs, html_ok, raw_html, soup = self.extract_html_features(url)
 
         total_secs = time.perf_counter() - wall_start
 
@@ -595,6 +602,8 @@ class UnifiedFeaturePipeline:
             html_features=html_numeric,
             html_diagnostics=html_diag,
             metadata=metadata,
+            raw_html=raw_html,
+            soup=soup,
         )
 
     def extract_batch(
@@ -628,6 +637,11 @@ class UnifiedFeaturePipeline:
                 except Exception:
                     pass
         return results
+
+    def extract_18_features(self, url: str) -> dict[str, Any]:
+        """Extract the exact 18 leakage-free features for a given URL."""
+        res = self.extract(url)
+        return res.extract_18_features()
 
 
 # ── Helper utilities ──────────────────────────────────────────────────────────
@@ -880,3 +894,81 @@ if __name__ == "__main__":
     report = generate_unified_report([result])
     print(f"Report written : {report}")
     print("Self-test complete.")
+
+
+class FeatureOrderError(Exception):
+    pass
+
+class PhiUSIILFeatureAdapter:
+    """Adapter to generate the exact 18 leakage-free PhiUSIIL features."""
+    
+    def __init__(self, url: str, raw_html: str = "", soup: Any = None):
+        self.url = url
+        self.raw_html = raw_html
+        self.soup = soup
+        
+        # Load expected feature order
+        import joblib
+        from pathlib import Path
+        model_dir = Path(__file__).resolve().parent.parent / "models" / "leakage_free"
+        self.expected_features = joblib.load(model_dir / "features_18.pkl")
+
+    def extract(self) -> dict[str, Any]:
+        from utils.url_feature_extractor import extract_phiusiil_url_features
+        url_feats = extract_phiusiil_url_features(self.url)
+
+        html_feats: dict[str, Any] = {}
+        if self.soup is not None and self.raw_html:
+            from utils.html_feature_extractor import HTMLFeatureExtractor
+            html_feats = HTMLFeatureExtractor.extract_phiusiil_html_features(self.soup, self.raw_html, self.url)
+        else:
+            # HTML signals genuinely cannot be extracted -> return None, do not fabricate 0s
+            html_keys = [
+                "LineOfCode", "LargestLineLength", "NoOfImage", "NoOfJS", "NoOfCSS",
+                "HasDescription", "IsResponsive", "HasSubmitButton", "HasSocialNet",
+                "HasCopyrightInfo", "NoOfExternalRef", "NoOfSelfRef", "DomainTitleMatchScore"
+            ]
+            html_feats = {k: None for k in html_keys}
+        
+        # Merge results
+        merged = {**html_feats, **url_feats}
+        
+        # Apply type casting and validation according to spec
+        validated: dict[str, Any] = {}
+        for k, v in merged.items():
+            if v is None:
+                validated[k] = None
+                continue
+            if k in {"NoOfExternalRef", "LineOfCode", "NoOfSelfRef", "NoOfImage", 
+                     "NoOfJS", "NoOfCSS", "NoOfOtherSpecialCharsInURL", 
+                     "LargestLineLength", "NoOfDegitsInURL", "URLLength"}:
+                validated[k] = int(v)
+                if validated[k] < 0:
+                    raise ValueError(f"{k} must be >= 0, got {validated[k]}")
+            elif k in {"HasSocialNet", "HasCopyrightInfo", "HasDescription", 
+                       "IsResponsive", "HasSubmitButton"}:
+                validated[k] = int(v)
+                if validated[k] not in {0, 1}:
+                    raise ValueError(f"{k} must be 0 or 1, got {validated[k]}")
+            elif k in {"DegitRatioInURL", "DomainTitleMatchScore", "SpacialCharRatioInURL"}:
+                validated[k] = float(v)
+                if validated[k] < 0:
+                    raise ValueError(f"{k} must be >= 0, got {validated[k]}")
+                if k == "DomainTitleMatchScore" and validated[k] > 100:
+                    raise ValueError(f"{k} must be <= 100, got {validated[k]}")
+            else:
+                validated[k] = v
+
+        # Verify exactly the expected features are present
+        extracted_keys = list(validated.keys())
+        missing = [f for f in self.expected_features if f not in extracted_keys]
+        if missing:
+            raise FeatureOrderError(f"Missing features: {missing}")
+            
+        # Order the dictionary correctly according to 18-feature schema
+        ordered_result = {k: validated[k] for k in self.expected_features}
+        
+        if list(ordered_result.keys()) != self.expected_features:
+            raise FeatureOrderError("Feature order mismatch")
+            
+        return ordered_result

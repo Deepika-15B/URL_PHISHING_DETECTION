@@ -753,11 +753,11 @@ def predict_endpoint():
 
         if model is None or scaler is None or top20_features is None:
             import pickle
-            with open(_MODELS_DIR / "top20_features.pkl", "rb") as f:
+            with open(_MODELS_DIR / "leakage_free" / "top20_features_leakage_free.pkl", "rb") as f:
                 top20_features = pickle.load(f)
-            with open(_MODELS_DIR / "scaler_phase2_v2.pkl", "rb") as f:
-                scaler = pickle.load(f)
-            model = tf.keras.models.load_model(_MODELS_DIR / "fnn_phase2_v2.keras")
+            with open(_MODELS_DIR / "leakage_free" / "scaler.pkl", "rb") as f:
+                import joblib; scaler = joblib.load(f)
+            model = tf.keras.models.load_model(_MODELS_DIR / "leakage_free" / "fnn_model.keras")
 
 
 

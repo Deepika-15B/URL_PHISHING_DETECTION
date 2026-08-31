@@ -1,0 +1,26 @@
+# Duplicate Audit Report (Phase 3)
+
+## Exact duplicate rows within Train: 0 / 164194
+## Exact duplicate rows within Validation: 0 / 35184
+## Exact duplicate rows within Test: 0 / 35185
+
+## Duplicate feature vectors within Train: 0 / 164194
+## Duplicate feature vectors within Validation: 0 / 35184
+## Duplicate feature vectors within Test: 0 / 35185
+
+## Cross-Split Overlap
+
+- Train vs Validation: Feature vector overlap = 0, Exact row overlap = 0
+  (0.00% of Validation set)
+- Train vs Test: Feature vector overlap = 0, Exact row overlap = 0
+  (0.00% of Test set)
+- Validation vs Test: Feature vector overlap = 0, Exact row overlap = 0
+  (0.00% of Test set)
+
+## Impact Assessment
+
+If feature vector duplicates exist across train and test splits,
+the model may have memorized those exact patterns, potentially inflating
+test metrics. With the processed_v2 dataset (which used URL-level dedup),
+the remaining duplicates are from genuinely different URLs that happen
+to produce identical feature vectors.
