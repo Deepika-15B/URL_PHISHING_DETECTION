@@ -58,6 +58,7 @@ Version : 1.0.0  (Submodule 3.5)
 from __future__ import annotations
 
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -72,6 +73,15 @@ _PROJECT_ROOT = _HERE.parent                      # .../phishing_detection_ieee/
 _MODELS_DIR = _PROJECT_ROOT / "models"
 _REPORTS_DIR = _PROJECT_ROOT / "reports"
 _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+_LOG = logging.getLogger(__name__)
+
+
+def _diagnostic_log(message: str, *args: Any) -> None:
+    """Log diagnostics without depending on a process console."""
+    try:
+        _LOG.info(message, *args)
+    except (OSError, ValueError):
+        pass
 
 # ── HTML numeric feature keys (ordered, authoritative list) ───────────────────
 # These match exactly the keys emitted by HTMLFeatureExtractor.extract_all_html_features()
@@ -121,7 +131,16 @@ _HTML_NUMERIC_KEYS: list[str] = [
 ]
 
 # Diagnostic string fields kept separately (not in numeric vector)
-_HTML_STRING_KEYS: list[str] = ["page_title", "meta_description", "extracted_brand_name"]
+_HTML_STRING_KEYS: list[str] = [
+    "page_title",
+    "meta_description",
+    "extracted_brand_name",
+    "extracted_page_domain",
+    "extracted_registered_domain",
+    "extracted_tld_domain",
+    "extracted_tld_suffix",
+    "html_excerpt",
+]
 
 
 # ── Schema dataclass ──────────────────────────────────────────────────────────
@@ -422,8 +441,7 @@ class UnifiedFeaturePipeline:
             except Exception as exc:
                 self._html_extractor = None
                 self._html_browser_error = str(exc)
-                import traceback
-                traceback.print_exc()
+                _LOG.exception("Unable to launch HTML extraction browser")
                 raise  # Re-raise to prevent silent fallback
         return self
 
@@ -503,19 +521,19 @@ class UnifiedFeaturePipeline:
             raw = self._html_extractor.extract_all_html_features(soup, page_url=url)
 
             # ── STEP 4 FORENSIC: value in raw dict immediately after extractor returns ──
-            print("========== STEP4: raw from extract_all_html_features ==========")
-            print(f"[STEP4-A] raw['title_domain_similarity_score'] = {raw.get('title_domain_similarity_score')!r}")
-            print(f"[STEP4-A] raw['title_matches_domain']          = {raw.get('title_matches_domain')!r}")
-            print(f"[STEP4-A] raw['page_title']                    = {raw.get('page_title')!r}")
-            print("==============================================================")
+            _diagnostic_log(
+                "HTML title diagnostics: similarity=%r matches=%r title=%r",
+                raw.get("title_domain_similarity_score"),
+                raw.get("title_matches_domain"),
+                raw.get("page_title"),
+            )
 
             numeric: dict[str, Any] = {}
             diagnostics: dict[str, str] = {}
             for key in _HTML_NUMERIC_KEYS:
                 raw_val = raw.get(key)  # None if key is absent
                 if key == "title_domain_similarity_score":
-                    print("PIPELINE raw contains key:", key in raw)
-                    print("PIPELINE raw value:", raw_val)
+                    _diagnostic_log("Pipeline similarity key present=%s value=%r", key in raw, raw_val)
                 # Only store the value if the extractor explicitly returned it.
                 # None means the extractor did not provide a value for this key.
                 # 0 means the extractor explicitly returned 0 (e.g. no submit buttons found).
@@ -525,25 +543,29 @@ class UnifiedFeaturePipeline:
                 # allows Pass 3 (alias map) to compute it dynamically.
             for key in _HTML_STRING_KEYS:
                 diagnostics[key] = str(raw.get(key, ""))
+            excerpt = getattr(self._html_extractor, "_last_html_excerpt", "") or ""
+            if excerpt:
+                diagnostics["html_excerpt"] = excerpt[:8000]
 
             # ── STEP 4 FORENSIC: value AFTER key-loop ──
-            print("========== STEP4: numeric after key-loop ==========")
-            print(f"[STEP4-B] numeric.get('title_domain_similarity_score') = {numeric.get('title_domain_similarity_score')!r}")
-            print(f"[STEP4-B] 'title_domain_similarity_score' in numeric = {'title_domain_similarity_score' in numeric}")
-            print("===================================================")
+            _diagnostic_log(
+                "HTML numeric similarity=%r present=%s",
+                numeric.get("title_domain_similarity_score"),
+                "title_domain_similarity_score" in numeric,
+            )
 
             elapsed = time.perf_counter() - t0
 
-            print("========== PIPELINE STAGE 2 ==========")
-            print(f"html_numeric['title_domain_similarity_score']: {numeric.get('title_domain_similarity_score')}")
-            print(f"html_numeric['title_matches_domain']:          {numeric.get('title_matches_domain')}")
-            print("======================================")
+            _diagnostic_log(
+                "Pipeline HTML outputs: similarity=%r matches=%r",
+                numeric.get("title_domain_similarity_score"),
+                numeric.get("title_matches_domain"),
+            )
 
             return numeric, diagnostics, status, elapsed, True
 
         except Exception as exc:
-            import traceback
-            traceback.print_exc()
+            _LOG.exception("HTML feature extraction failed")
             status.append(f"HTML extraction failed: {exc}")
             raise  # Re-raise to prevent silent fallback
 

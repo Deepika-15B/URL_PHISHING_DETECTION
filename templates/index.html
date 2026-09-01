@@ -389,7 +389,7 @@
           </div>
           <div>
             <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Prediction</div>
-            <div class="badge-prediction badge-phishing" style="display: inline-block;">PHISHING (High Risk)</div>
+            <div class="badge-prediction" id="unknownPredictionBadge" style="display: inline-block;">UNKNOWN</div>
           </div>
         </div>
       </div>
@@ -529,6 +529,17 @@
         return;
       }
 
+      document.getElementById('screenshotContainer').innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 3rem 0;">No screenshot captured</p>';
+      document.getElementById('predictionResult').innerText = '';
+      document.getElementById('confidenceVal').innerText = '';
+      document.getElementById('threatScoreVal').innerText = '';
+      document.getElementById('threatBarFill').style.width = '0%';
+      document.getElementById('unreachableCard').style.display = 'none';
+      document.getElementById('predictionCard').style.display = 'none';
+      document.getElementById('screenshotCard').style.display = 'none';
+      document.getElementById('htmlSecurityCard').style.display = 'none';
+      document.getElementById('systemInfoCard').style.display = 'none';
+
       loadingState.style.display = 'block';
       resultsGrid.style.display = 'none';
 
@@ -540,12 +551,30 @@
         });
 
         const data = await response.json();
-
-        if (data.status === 'unreachable') {
-          renderUnreachable(data);
-          return;
+        if (!data || typeof data !== "object") {
+            throw new Error('Invalid response received from server.');
         }
 
+        if (data.status === "BOT_PROTECTION_PAGE") {
+            renderBotProtection(data);
+            return;
+        }
+        if (data.status === "CDN_ERROR_PAGE") {
+            renderCDNError(data);
+            return;
+        }
+        if (data.status === "PARTIAL_EXTRACTION") {
+            renderPartialExtraction(data);
+            return;
+        }
+        if (data.status === "unreachable") {
+            renderUnreachable(data);
+            return;
+        }
+        if (data.prediction === "Unknown" || data.prediction === "UNKNOWN") {
+            renderUnknown(data);
+            return;
+        }
         if (!response.ok || data.error) {
           throw new Error(data.error || 'Failed to process request');
         }
@@ -559,44 +588,73 @@
       }
     }
 
-    function renderUnreachable(data) {
-      // 1. Clear any previous prediction state so old screenshots and predictions do not remain visible
-      document.getElementById('screenshotContainer').innerHTML = '';
-      document.getElementById('predictionResult').innerText = 'PHISHING';
-      document.getElementById('predictionResult').className = 'badge-prediction badge-phishing';
-      document.getElementById('confidenceVal').innerText = '100%';
-      document.getElementById('threatScoreVal').innerText = '100 / 100';
-      document.getElementById('threatBarFill').style.width = '100%';
-      document.getElementById('threatBarFill').style.background = 'var(--accent-red)';
-      document.getElementById('riskBadge').innerText = 'High Risk';
-      document.getElementById('riskBadge').style.background = 'rgba(239, 68, 68, 0.2)';
-      document.getElementById('riskBadge').style.color = '#f87171';
-      
-      document.getElementById('mExtractTime').innerText = '0s';
-      document.getElementById('mPredTime').innerText = '0s';
-      document.getElementById('mTotalTime').innerText = '0s';
-
-      // 2. Hide all existing prediction cards and show ONLY the unreachable warning card
+    function displayWarningCard(title, prediction, confidence, threatScore, reasons, data) {
       const resultsGrid = document.getElementById('resultsGrid');
       resultsGrid.style.display = 'grid';
-      
-      document.getElementById('unreachableCard').style.display = 'block';
-      document.getElementById('predictionCard').style.display = 'none';
-      document.getElementById('screenshotCard').style.display = 'none';
-      document.getElementById('htmlSecurityCard').style.display = 'none';
-      document.getElementById('systemInfoCard').style.display = 'none';
 
-      // 3. Render the unreachable reasons
-      if (data.reason && Array.isArray(data.reason)) {
-        const ul = document.getElementById('unreachableReasons');
-        ul.innerHTML = '';
-        data.reason.forEach(r => {
-          const li = document.createElement('li');
-          li.style.marginBottom = '0.25rem';
-          li.innerText = '• ' + r;
-          ul.appendChild(li);
-        });
+      const errCard = document.getElementById('unreachableCard');
+      errCard.style.display = 'block';
+      errCard.style.background = 'rgba(107, 114, 128, 0.1)';
+      errCard.style.borderColor = 'rgba(107, 114, 128, 0.3)';
+
+      const titleDiv = errCard.querySelector('.card-title');
+      if (titleDiv) {
+          titleDiv.style.color = '#9ca3af';
+          const titleSpan = titleDiv.querySelector('span');
+          if (titleSpan) {
+              titleSpan.textContent = title;
+          }
       }
+
+      document.getElementById('predictionCard').style.display = 'none';
+      document.getElementById('htmlSecurityCard').style.display = 'none';
+      document.getElementById('screenshotCard').style.display = 'none';
+      const sysCard = document.getElementById('systemInfoCard');
+      if (data && data.system_info) {
+          sysCard.style.display = 'block';
+          document.getElementById('sysBrowser').innerText = data.system_info.browser_status || "N/A";
+          document.getElementById('sysUrlFeats').innerText = data.system_info.url_feature_count ?? "N/A";
+          document.getElementById('sysHtmlFeats').innerText = data.system_info.html_feature_count ?? "N/A";
+      } else {
+          sysCard.style.display = 'none';
+      }
+
+      const ul = document.getElementById('unreachableReasons');
+      if (ul) {
+          ul.innerHTML = '';
+          const items = Array.isArray(reasons) ? reasons : [reasons || 'No specific reason provided.'];
+          items.forEach(r => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '0.25rem';
+              li.innerText = '• ' + r;
+              ul.appendChild(li);
+          });
+      }
+
+      const badgeDiv = errCard.querySelector('.badge-prediction');
+      if (badgeDiv) {
+          badgeDiv.innerText = prediction + ' (Confidence: ' + confidence + ', Threat: ' + threatScore + ')';
+          badgeDiv.className = 'badge-prediction';
+          badgeDiv.style.background = 'rgba(107, 114, 128, 0.15)';
+          badgeDiv.style.border = '1px solid rgba(107, 114, 128, 0.4)';
+          badgeDiv.style.color = '#9ca3af';
+      }
+    }
+
+    function renderPartialExtraction(data) {
+        displayWarningCard("Website Analysis Incomplete", "UNKNOWN", "0%", "0 / 100", data && data.reason ? data.reason : "Website content could not be completely extracted.", data);
+    }
+    function renderUnknown(data) {
+        displayWarningCard("Unknown Classification", "UNKNOWN", "0%", "0 / 100", data && data.reason ? data.reason : "The backend returned an Unknown prediction.", data);
+    }
+    function renderUnreachable(data) {
+        displayWarningCard("Website could not be reached", "UNKNOWN", "0%", "0 / 100", data && data.reason ? data.reason : "Domain could not be reached.", data);
+    }
+    function renderBotProtection(data) {
+        displayWarningCard("Website Protected by Anti-Bot Mechanism", "UNKNOWN", "0%", "0 / 100", data && data.reason ? data.reason : "Website is protected by anti-bot mechanisms.", data);
+    }
+    function renderCDNError(data) {
+        displayWarningCard("Website Content Could Not Be Retrieved", "UNKNOWN", "0%", "0 / 100", data && data.reason ? data.reason : "CDN error page detected.", data);
     }
 
     function renderResults(data) {
@@ -609,19 +667,22 @@
       document.getElementById('htmlSecurityCard').style.display = 'block';
       document.getElementById('systemInfoCard').style.display = 'block';
 
-      // Prediction Label & Badge
       const predRes = document.getElementById('predictionResult');
+      predRes.style = '';
       predRes.innerText = data.prediction;
-      predRes.className = 'badge-prediction ' + (data.prediction === 'Legitimate' ? 'badge-legitimate' : 'badge-phishing');
+      predRes.className = 'badge-prediction ' + (data.prediction === 'Legitimate' ? 'badge-legitimate' : (data.prediction === 'Phishing' ? 'badge-phishing' : ''));
+      if (data.prediction !== 'Legitimate' && data.prediction !== 'Phishing') {
+          predRes.style.background = 'rgba(107, 114, 128, 0.15)';
+          predRes.style.border = '1px solid rgba(107, 114, 128, 0.4)';
+          predRes.style.color = '#9ca3af';
+      }
 
       document.getElementById('confidenceVal').innerText = data.confidence + '%';
-      
-      // Threat Score
+
       const threatScore = data.threat_score;
       document.getElementById('threatScoreVal').innerText = threatScore + ' / 100';
       const threatFill = document.getElementById('threatBarFill');
       threatFill.style.width = threatScore + '%';
-      
       if (threatScore >= 80) {
         threatFill.style.background = 'var(--accent-red)';
       } else if (threatScore >= 40) {
@@ -630,26 +691,27 @@
         threatFill.style.background = 'var(--accent-green)';
       }
 
-      // Risk Level
       const riskBadge = document.getElementById('riskBadge');
-      riskBadge.innerText = data.risk_level + ' Risk';
-      if (data.risk_level === 'High') {
+      const riskLvl = data.risk_level || 'Unknown';
+      riskBadge.innerText = riskLvl + (riskLvl === 'Unknown' ? '' : ' Risk');
+      if (riskLvl === 'High') {
         riskBadge.style.background = 'rgba(239, 68, 68, 0.2)';
         riskBadge.style.color = '#f87171';
-      } else if (data.risk_level === 'Medium') {
+      } else if (riskLvl === 'Medium') {
         riskBadge.style.background = 'rgba(245, 158, 11, 0.2)';
         riskBadge.style.color = '#fbbf24';
+      } else if (riskLvl === 'Unknown') {
+        riskBadge.style.background = 'rgba(107, 114, 128, 0.2)';
+        riskBadge.style.color = '#9ca3af';
       } else {
         riskBadge.style.background = 'rgba(16, 185, 129, 0.2)';
         riskBadge.style.color = '#34d399';
       }
 
-      // Timing
       document.getElementById('mExtractTime').innerText = data.system_info.extraction_time + 's';
       document.getElementById('mPredTime').innerText = data.system_info.prediction_time + 's';
       document.getElementById('mTotalTime').innerText = data.system_info.total_processing_time + 's';
 
-      // Screenshot
       const ssContainer = document.getElementById('screenshotContainer');
       if (data.screenshot_path) {
         ssContainer.innerHTML = `<img src="${data.screenshot_path}" class="screenshot-img" alt="Captured Website Screenshot">`;
@@ -657,7 +719,6 @@
         ssContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 3rem 0;">No screenshot captured</p>`;
       }
 
-      // HTML Report
       const h = data.html_security_report;
       document.getElementById('fForms').innerText = h.forms.number_of_forms;
       document.getElementById('fPasswords').innerText = h.forms.num_password_inputs;
@@ -679,7 +740,6 @@
       document.getElementById('mDomDepth').innerText = h.metadata.dom_depth;
       document.getElementById('mDomElements').innerText = h.metadata.num_total_dom_elements;
 
-      // System Info
       document.getElementById('sysBrowser').innerText = data.system_info.browser_status;
       document.getElementById('sysUrlFeats').innerText = data.system_info.url_feature_count;
       document.getElementById('sysHtmlFeats').innerText = data.system_info.html_feature_count;

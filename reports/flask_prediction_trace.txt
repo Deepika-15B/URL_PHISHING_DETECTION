@@ -1,5 +1,5 @@
 === FLASK PREDICTION TRACE ===
-URL: https://beta.uidai.gov.in/hi
+URL: https://www.kongu.ac.in
 Unreachable Fallback Executed: False
 Normal Inference Executed: True
 Model File Loaded: fnn_phase2_v2.keras
@@ -8,20 +8,20 @@ Top20 Features File Loaded: top20_features.pkl
 
 Raw Top-20 Feature Values:
   URLSimilarityIndex: 100.0
-  NoOfExternalRef: 8.0
-  LineOfCode: 7752.0
-  NoOfSelfRef: 37.0
+  NoOfExternalRef: 16.0
+  LineOfCode: 21568.0
+  NoOfSelfRef: 81.0
   IsHTTPS: 1.0
-  NoOfImage: 67.0
-  NoOfJS: 36.0
+  NoOfImage: 267.0
+  NoOfJS: 3.0
   HasSocialNet: 1.0
-  NoOfCSS: 2.0
+  NoOfCSS: 6.0
   HasCopyrightInfo: 0.0
   NoOfOtherSpecialCharsInURL: 0.0
   LargestLineLength: 5000.0
   HasDescription: 1.0
   NoOfDegitsInURL: 0.0
-  URLLength: 28.0
+  URLLength: 23.0
   IsResponsive: 1.0
   DegitRatioInURL: 0.0
   DomainTitleMatchScore: 100.0
@@ -30,20 +30,20 @@ Raw Top-20 Feature Values:
 
 Scaled Feature Values:
   [0]: 0.7393692135810852
-  [1]: -0.2879617214202881
-  [2]: 1.9032336473464966
-  [3]: -0.17632940411567688
+  [1]: -0.2322426289319992
+  [2]: 5.883406639099121
+  [3]: 0.09913629293441772
   [4]: 0.5281088948249817
-  [5]: 0.5346076488494873
-  [6]: 1.0401124954223633
+  [5]: 3.143369436264038
+  [6]: -0.31061384081840515
   [7]: 1.0859496593475342
-  [8]: -0.049535807222127914
+  [8]: -0.004777361638844013
   [9]: -0.9784529209136963
   [10]: -0.6803312301635742
   [11]: -0.0490824356675148
   [12]: 1.1239839792251587
   [13]: -0.16601194441318512
-  [14]: -0.17264577746391296
+  [14]: -0.30689528584480286
   [15]: 0.7761397361755371
   [16]: -0.40106824040412903
   [17]: 1.0009263753890991
@@ -55,15 +55,16 @@ Final Prediction: Legitimate
 
 Final JSON Payload returned to frontend:
 {
-  "url": "https://beta.uidai.gov.in/hi",
+  "url": "https://www.kongu.ac.in",
   "prediction": "Legitimate",
+  "model_class": 1,
   "probability": 1.0,
   "phishing_probability": 0.0,
   "confidence": 100.0,
   "threat_score": 0.0,
   "risk_level": "Low",
-  "screenshot_captured": true,
-  "screenshot_path": "/reports/screenshots/beta.uidai.gov.in_20260830_113615.png",
+  "screenshot_captured": false,
+  "screenshot_path": null,
   "html_security_report": {
     "forms": {
       "number_of_forms": 0,
@@ -75,35 +76,38 @@ Final JSON Payload returned to frontend:
       "has_external_action_password_form": "No"
     },
     "links": {
-      "num_links": 45,
-      "num_external_links": 8,
-      "num_internal_links": 37,
-      "num_null_self_links": 0,
-      "ratio_external_links": 0.1778,
+      "num_links": 99,
+      "num_external_links": 16,
+      "num_internal_links": 81,
+      "num_null_self_links": 2,
+      "ratio_external_links": 0.1616,
       "num_suspicious_anchor_text": 0,
-      "has_mismatch_link_text": "No"
+      "has_mismatch_link_text": "Yes"
     },
     "scripts": {
       "has_obfuscated_js": "Not Detected",
-      "num_iframes": 1,
-      "num_hidden_iframes": 1,
+      "num_iframes": 0,
+      "num_hidden_iframes": 0,
       "has_popup_script": "No",
       "has_right_click_disabled": "No",
-      "has_text_selection_disabled": "Yes"
+      "has_text_selection_disabled": "No"
     },
     "metadata": {
-      "page_title": "Home - Unique Identification Authority of India | Government of India - Unique Identification Authority of India | Government of India",
-      "meta_description": "UIDAI is mandated to issue an easily verifiable 12 digit random number as Unique Identity - Aadhaar to all Residents of India.",
+      "page_title": "KEC | KONGU ENGINEERING COLLEGE",
+      "meta_description": "Kongu Engineering College - Empowering engineering minds through excellence in education, research, and innovation. Located in Perundurai, Erode.",
+      "brand_name": "kongu",
+      "page_domain": "kongu.ac.in",
+      "registered_domain": "kongu.ac.in",
       "has_external_favicon": "No",
       "has_meta_refresh": "No",
       "title_matches_domain": "Yes",
-      "num_meta_tags": 25,
-      "dom_depth": 19,
-      "num_total_dom_elements": 969
+      "num_meta_tags": 4,
+      "dom_depth": 14,
+      "num_total_dom_elements": 2696
     }
   },
   "url_feature_summary": {
-    "domain": "beta.uidai.gov.in",
+    "domain": "www.kongu.ac.in",
     "tls_ssl_certificate": "N/A",
     "qty_ip_resolved": "N/A",
     "qty_nameservers": "N/A",
@@ -112,35 +116,37 @@ Final JSON Payload returned to frontend:
     "qty_redirects": "N/A"
   },
   "system_info": {
-    "url_extraction_secs": 0.002,
-    "html_extraction_secs": 16.056,
-    "extraction_time": 16.058,
-    "prediction_time": 0.0724,
-    "total_processing_time": 26.617,
+    "url_extraction_secs": 0.001,
+    "html_extraction_secs": 18.522,
+    "extraction_time": 18.523,
+    "prediction_time": 0.055,
+    "total_processing_time": 46.261,
     "browser_status": "Active",
     "url_feature_count": 0,
     "html_feature_count": 36,
     "url_extraction_status": "Failed",
     "html_extraction_status": "Success",
     "dns_extraction_status": "Failed",
-    "whois_extraction_status": "Failed"
+    "whois_extraction_status": "Failed",
+    "model_predict_called": true,
+    "feature_count": 20
   },
   "top20_features": {
     "URLSimilarityIndex": 100.0,
-    "NoOfExternalRef": 8.0,
-    "LineOfCode": 7752.0,
-    "NoOfSelfRef": 37.0,
+    "NoOfExternalRef": 16.0,
+    "LineOfCode": 21568.0,
+    "NoOfSelfRef": 81.0,
     "IsHTTPS": 1.0,
-    "NoOfImage": 67.0,
-    "NoOfJS": 36.0,
+    "NoOfImage": 267.0,
+    "NoOfJS": 3.0,
     "HasSocialNet": 1.0,
-    "NoOfCSS": 2.0,
+    "NoOfCSS": 6.0,
     "HasCopyrightInfo": 0.0,
     "NoOfOtherSpecialCharsInURL": 0.0,
     "LargestLineLength": 5000.0,
     "HasDescription": 1.0,
     "NoOfDegitsInURL": 0.0,
-    "URLLength": 28.0,
+    "URLLength": 23.0,
     "IsResponsive": 1.0,
     "DegitRatioInURL": 0.0,
     "DomainTitleMatchScore": 100.0,
@@ -151,5 +157,7 @@ Final JSON Payload returned to frontend:
     "phishing": [],
     "legitimate": []
   },
+  "model_predict_called": true,
+  "bot_protection_detected": false,
   "status": "success"
 }

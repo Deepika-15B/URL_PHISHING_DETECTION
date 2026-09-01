@@ -59,6 +59,76 @@ _ALIAS_MAP_PATH = _MODELS_DIR / "feature_alias_map.json"
 _SCREENSHOTS_DIR = _PROJECT_ROOT / "reports" / "screenshots"
 _SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
+_PHASE2_MODEL_FILE = "fnn_phase2_v2.keras"
+_PHASE2_SCALER_FILE = "scaler_phase2_v2.pkl"
+_PHASE2_FEATURES_FILE = "top20_features.pkl"
+
+
+def _exception_type_names(exc: BaseException) -> str:
+    names: list[str] = []
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        names.append(type(current).__name__)
+        current = current.__cause__ or current.__context__
+    return " ".join(names)
+
+
+def _bot_markers_from_exc(exc: BaseException) -> list[str]:
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        markers = getattr(current, "markers", None)
+        if markers:
+            return list(markers)
+        current = current.__cause__ or current.__context__
+    return []
+
+
+def _log_phase2_runtime(message: str, **fields: Any) -> None:
+    """Diagnostic runtime log for live Phase 2 inference (not shown in UI)."""
+    parts = [message] + [f"{k}={v}" for k, v in fields.items()]
+    logging.info("PHASE2_RUNTIME | %s", " | ".join(parts))
+    try:
+        current_app.logger.info("PHASE2_RUNTIME | %s", " | ".join(parts))
+    except Exception:
+        pass
+
+
+def interpret_phase2_probability(raw_prob: float) -> tuple[int, str, float, float, str]:
+    """Interpret the Phase 2 v2 sigmoid output without changing its thresholds.
+
+    The Phase 2 v2 training report names class 0 ``Phishing`` and class 1
+    ``Legitimate``. Therefore the sigmoid output is P(Legitimate), while the
+    complementary probability is P(Phishing).
+    """
+    legitimate_probability = float(raw_prob)
+    phishing_probability = 1.0 - legitimate_probability
+    model_class = int(legitimate_probability >= 0.5)
+
+    if legitimate_probability >= 0.75:
+        prediction_label = "Legitimate"
+    elif legitimate_probability <= 0.30:
+        prediction_label = "Phishing"
+    else:
+        prediction_label = "Suspicious"
+
+    if prediction_label == "Legitimate":
+        confidence = round(legitimate_probability * 100, 2)
+    elif prediction_label == "Phishing":
+        confidence = round(phishing_probability * 100, 2)
+    else:
+        confidence = round(max(legitimate_probability, phishing_probability) * 100, 2)
+
+    risk_level = (
+        "High" if phishing_probability >= 0.8
+        else "Medium" if phishing_probability >= 0.4
+        else "Low"
+    )
+    return model_class, prediction_label, confidence, phishing_probability, risk_level
+
 
 # ---------------------------------------------------------------------------
 # Prediction Trace Logging Helper
@@ -428,13 +498,13 @@ def capture_page_screenshot(pipeline: Any, url: str) -> str | None:
         extractor = getattr(pipeline, "_html_extractor", None)
         if extractor is None:
             logging.warning("Screenshot skipped: html_extractor not available for %s", url)
-            print("[SCREENSHOT] html_extractor is None - browser not launched")
+            logging.info("Screenshot skipped: html_extractor is not available")
             return None
 
         context = getattr(extractor, "_context", None)
         if context is None:
             logging.warning("Screenshot skipped: browser context is None for %s", url)
-            print("[SCREENSHOT] BrowserContext is None - cannot take screenshot")
+            logging.info("Screenshot skipped: browser context is not available")
             return None
 
         parsed = urlparse(url)
@@ -443,24 +513,26 @@ def capture_page_screenshot(pipeline: Any, url: str) -> str | None:
         filename = f"{domain}_{timestamp}.png"
         filepath = _SCREENSHOTS_DIR / filename
 
-        print(f"[SCREENSHOT] Browser launched: True")
-        print(f"[SCREENSHOT] Navigating to: {url}")
+        logging.info("Screenshot browser active; navigating to %s", url)
 
         # Open a fresh page on the still-live BrowserContext
         page = context.new_page()
         try:
             try:
                 page.goto(url, wait_until="networkidle", timeout=15000)
-                print("[SCREENSHOT] Page loaded (networkidle)")
+                logging.info("Screenshot page loaded (networkidle)")
             except Exception:
                 page.goto(url, wait_until="domcontentloaded", timeout=10000)
                 page.wait_for_timeout(500)
-                print("[SCREENSHOT] Page loaded (domcontentloaded fallback)")
+                logging.info("Screenshot page loaded (domcontentloaded fallback)")
+            try:
+                from utils.html_feature_extractor import wait_for_rendered_content
+                wait_for_rendered_content(page, timeout_ms=8000)
+            except Exception:
+                page.wait_for_timeout(500)
 
             page.screenshot(path=str(filepath), full_page=False, timeout=8000)
-            print(f"[SCREENSHOT] Filename  : {filename}")
-            print(f"[SCREENSHOT] Directory : {_SCREENSHOTS_DIR}")
-            print(f"[SCREENSHOT] Saved     : {filepath.exists()}")
+            logging.info("Screenshot saved: %s (exists=%s)", filepath, filepath.exists())
             logging.info("Screenshot saved: %s (exists=%s)", filepath, filepath.exists())
             return f"/reports/screenshots/{filename}"
         finally:
@@ -469,7 +541,7 @@ def capture_page_screenshot(pipeline: Any, url: str) -> str | None:
     except Exception as exc:
         tb = traceback.format_exc()
         logging.warning("Screenshot capture failed for %s: %s\n%s", url, exc, tb)
-        print(f"[SCREENSHOT] EXCEPTION:\n{tb}")
+        logging.warning("Screenshot capture failed for %s: %s\n%s", url, exc, tb)
         return None
 
 
@@ -551,7 +623,31 @@ def predict_endpoint():
         ]
         is_unreachable = any(err in exc_str for err in network_errors)
         
-        if "AntiBotProtectionError" in type(exc).__name__:
+        if "AntiBotProtectionError" in _exception_type_names(exc):
+            markers = _bot_markers_from_exc(exc)
+            html_length = None
+            http_status = None
+            try:
+                from utils.html_feature_extractor import HTMLFeatureExtractor as _HX
+                html_length = getattr(_HX, "_last_html_length", None)
+                http_status = getattr(_HX, "_last_http_status", None)
+            except Exception:
+                pass
+            _log_phase2_runtime(
+                "bot_protection_abort",
+                URL=url,
+                MODEL_PATH=_PHASE2_MODEL_FILE,
+                SCALER_PATH=_PHASE2_SCALER_FILE,
+                FEATURE_FILE=_PHASE2_FEATURES_FILE,
+                FEATURE_COUNT=0,
+                BROWSER_STATUS="Blocked",
+                HTML_EXTRACTION_STATUS="Failed",
+                BOT_PROTECTION_STATUS="DETECTED",
+                DETECTED_MARKERS=markers,
+                MODEL_PREDICTION_CALLED="NO",
+                MODEL_CLASS="NOT_CALLED",
+                FINAL_PREDICTION="Unknown",
+            )
             payload = {
                 "status": "BOT_PROTECTION_PAGE",
                 "prediction": "Unknown",
@@ -560,13 +656,19 @@ def predict_endpoint():
                 "reason": ["Website is protected by anti-bot mechanisms. Unable to analyse actual webpage."],
                 "browser_status": "Blocked",
                 "screenshot": None,
-                "risk_level": "Unknown"
+                "risk_level": "Unknown",
+                "bot_protection_detected": True,
+                "detected_markers": markers,
+                "model_predict_called": False,
+                "html_length": html_length,
+                "http_status": http_status,
             }
             _write_prediction_trace({
                 "url": url,
                 "is_unreachable": False,
                 "normal_inference": False,
-                "prediction": "Unknown"
+                "prediction": "Unknown",
+                "model_predict_called": False,
             }, payload)
             return jsonify(payload), 200
 
@@ -644,6 +746,19 @@ def predict_endpoint():
         return val
 
     if not meta.get("html_extraction_ok"):
+        _log_phase2_runtime(
+            "partial_extraction_abort",
+            URL=url,
+            MODEL_PATH=_PHASE2_MODEL_FILE,
+            SCALER_PATH=_PHASE2_SCALER_FILE,
+            FEATURE_FILE=_PHASE2_FEATURES_FILE,
+            FEATURE_COUNT=0,
+            BROWSER_STATUS="Failed",
+            HTML_EXTRACTION_STATUS="Failed",
+            BOT_PROTECTION_STATUS="NO",
+            MODEL_PREDICTION_CALLED="NO",
+            FINAL_PREDICTION="Unknown",
+        )
         payload = {
             "status": "PARTIAL_EXTRACTION",
             "prediction": "Unknown",
@@ -653,6 +768,7 @@ def predict_endpoint():
             "browser_status": "Failed",
             "screenshot": None,
             "risk_level": "Unknown",
+            "model_predict_called": False,
             "url_feature_summary": {
                 "domain": urlparse(url).hostname,
                 "tls_ssl_certificate": _safe_get_url_feat("tls_ssl_certificate"),
@@ -700,7 +816,105 @@ def predict_endpoint():
     is_low_dom = dom_elements < 50
     is_low_resources = (num_links + num_images + num_css + num_js) < 10
 
-    if is_empty_title and is_low_dom and is_low_resources:
+    interstitial_haystack = " ".join(
+        [
+            str(html_diagnostics.get("page_title", "")),
+            str(html_diagnostics.get("meta_description", "")),
+            str(html_diagnostics.get("html_excerpt", "")),
+        ]
+    )
+    interstitial_markers = []
+    try:
+        from utils.html_feature_extractor import detect_bot_protection_markers
+
+        interstitial_markers = detect_bot_protection_markers(
+            str(html_diagnostics.get("page_title", "")),
+            interstitial_haystack,
+        )
+    except Exception:
+        interstitial_markers = []
+
+    if interstitial_markers:
+        _log_phase2_runtime(
+            "bot_protection_from_diagnostics",
+            URL=url,
+            MODEL_PATH=_PHASE2_MODEL_FILE,
+            SCALER_PATH=_PHASE2_SCALER_FILE,
+            FEATURE_FILE=_PHASE2_FEATURES_FILE,
+            FEATURE_COUNT=0,
+            BROWSER_STATUS="Blocked",
+            HTML_EXTRACTION_STATUS="Success",
+            BOT_PROTECTION_STATUS="DETECTED",
+            DETECTED_MARKERS=interstitial_markers,
+            MODEL_PREDICTION_CALLED="NO",
+            FINAL_PREDICTION="Unknown",
+        )
+        payload = {
+            "status": "BOT_PROTECTION_PAGE",
+            "prediction": "Unknown",
+            "confidence": 0,
+            "threat_score": 0,
+            "reason": ["Website is protected by anti-bot mechanisms. Unable to analyse actual webpage."],
+            "browser_status": "Blocked",
+            "screenshot": None,
+            "risk_level": "Unknown",
+            "bot_protection_detected": True,
+            "detected_markers": interstitial_markers,
+            "model_predict_called": False,
+            "url_feature_summary": {
+                "domain": urlparse(url).hostname,
+                "tls_ssl_certificate": _safe_get_url_feat("tls_ssl_certificate"),
+                "qty_ip_resolved": _safe_get_url_feat("qty_ip_resolved"),
+                "qty_nameservers": _safe_get_url_feat("qty_nameservers"),
+                "time_response": _safe_get_url_feat("time_response"),
+                "domain_spf": _safe_get_url_feat("domain_spf"),
+                "qty_redirects": _safe_get_url_feat("qty_redirects"),
+            },
+            "system_info": {
+                "url_extraction_secs": round(meta.get("url_extraction_secs", 0.0), 3),
+                "html_extraction_secs": round(meta.get("html_extraction_secs", 0.0), 3),
+                "extraction_time": round(meta.get("total_extraction_secs", 0.0), 3),
+                "prediction_time": 0.0,
+                "total_processing_time": 0.0,
+                "browser_status": "Blocked",
+                "url_feature_count": _to_native(meta.get("url_feature_count", 0)),
+                "html_feature_count": _to_native(meta.get("html_feature_count", 0)),
+                "url_extraction_status": "Success" if meta.get("url_extraction_ok") else "Failed",
+                "html_extraction_status": "Success" if meta.get("html_extraction_ok") else "Failed",
+                "dns_extraction_status": "Success" if meta.get("dns_extraction_ok") else "Failed",
+                "whois_extraction_status": "Success" if meta.get("whois_extraction_ok") else "Failed",
+                "model_predict_called": False,
+            },
+        }
+        _write_prediction_trace({
+            "url": url,
+            "is_unreachable": False,
+            "normal_inference": False,
+            "prediction": "Unknown",
+            "model_predict_called": False,
+        }, payload)
+        return jsonify(payload), 200
+
+    is_unresolved_shell = (
+        int(num_links or 0) == 0
+        and int(num_images or 0) <= 2
+        and int(dom_elements or 0) < 150
+    )
+
+    if (is_empty_title and is_low_dom and is_low_resources) or is_unresolved_shell:
+        _log_phase2_runtime(
+            "incomplete_page_abort",
+            URL=url,
+            MODEL_PATH=_PHASE2_MODEL_FILE,
+            SCALER_PATH=_PHASE2_SCALER_FILE,
+            FEATURE_FILE=_PHASE2_FEATURES_FILE,
+            FEATURE_COUNT=0,
+            BROWSER_STATUS="Failed",
+            HTML_EXTRACTION_STATUS="Success",
+            BOT_PROTECTION_STATUS="NO",
+            MODEL_PREDICTION_CALLED="NO",
+            FINAL_PREDICTION="Unknown",
+        )
         payload = {
             "status": "PARTIAL_EXTRACTION",
             "prediction": "Unknown",
@@ -712,6 +926,7 @@ def predict_endpoint():
             "browser_status": "Failed",
             "screenshot": None,
             "risk_level": "Unknown",
+            "model_predict_called": False,
             "url_feature_summary": {
                 "domain": urlparse(url).hostname,
                 "tls_ssl_certificate": _safe_get_url_feat("tls_ssl_certificate"),
@@ -759,7 +974,17 @@ def predict_endpoint():
                 scaler = pickle.load(f)
             model = tf.keras.models.load_model(_MODELS_DIR / "fnn_phase2_v2.keras")
 
-
+        if len(top20_features) != 20:
+            raise ValueError(
+                f"Phase 2 feature list must contain 20 names, got {len(top20_features)}"
+            )
+        model_in = getattr(model, "input_shape", None)
+        if model_in is not None:
+            last_dim = model_in[-1] if isinstance(model_in, tuple) else None
+            if last_dim not in (None, 20):
+                raise ValueError(
+                    f"Phase 2 model input last dim must be 20, got {model_in}"
+                )
 
         # Bug 1 Fix: combine url_feats + html_feats and resolve using 3-pass mapper
         combined_feats: dict[str, Any] = {**url_feats, **html_feats}
@@ -818,33 +1043,47 @@ def predict_endpoint():
 
         input_df = pd.DataFrame([feat_dict], columns=top20_features).astype(np.float32)
 
+        # === STRICT RUNTIME ASSERTIONS (Phase 2) ===
+        if list(input_df.columns) != list(top20_features):
+            raise ValueError(
+                f"Feature column mismatch: expected {top20_features}, got {list(input_df.columns)}"
+            )
+        if input_df.shape != (1, 20):
+            raise ValueError(
+                f"Feature DataFrame shape mismatch: expected (1, 20), got {input_df.shape}"
+            )
+
         X_scaled = scaler.transform(input_df)
 
-
+        if tuple(X_scaled.shape) != (1, 20):
+            raise ValueError(
+                f"Scaled input shape mismatch: expected (1, 20), got {X_scaled.shape}"
+            )
 
         raw_prob = float(model.predict(X_scaled, verbose=0)[0][0])
+        _log_phase2_runtime(
+            "model_inference",
+            URL=url,
+            MODEL_PATH=_PHASE2_MODEL_FILE,
+            SCALER_PATH=_PHASE2_SCALER_FILE,
+            FEATURE_FILE=_PHASE2_FEATURES_FILE,
+            FEATURE_COUNT=len(top20_features),
+            FEATURE_ORDER=list(top20_features),
+            RAW_FEATURES=dict(zip(top20_features, input_df.iloc[0].tolist())),
+            SCALED_INPUT_SHAPE=tuple(X_scaled.shape),
+            BROWSER_STATUS="Active",
+            HTML_EXTRACTION_STATUS="Success",
+            BOT_PROTECTION_STATUS="NO",
+            MODEL_PREDICTION_CALLED="YES",
+            RAW_MODEL_PROBABILITY=raw_prob,
+        )
         t_pred_end = time.perf_counter()
         prediction_time = t_pred_end - t_pred_start
 
-        # label 0 = Phishing, label 1 = Legitimate (Phase 2 v2 training)
-        phishing_probability = 1.0 - raw_prob
-        
-        if raw_prob >= 0.75:
-            prediction_label = "Legitimate"
-        elif raw_prob <= 0.30:
-            prediction_label = "Phishing"
-        else:
-            prediction_label = "Suspicious"
-            
-        if prediction_label == "Legitimate":
-            confidence = round(raw_prob * 100, 2)
-        elif prediction_label == "Phishing":
-            confidence = round(phishing_probability * 100, 2)
-        else:
-            confidence = round(max(raw_prob, phishing_probability) * 100, 2)
-            
+        model_class, prediction_label, confidence, phishing_probability, risk_level = (
+            interpret_phase2_probability(raw_prob)
+        )
         threat_score = round(phishing_probability * 100, 1)
-        risk_level = "High" if phishing_probability >= 0.8 else "Medium" if phishing_probability >= 0.4 else "Low"
 
         # Generate Explainable Feature Contributions
         feature_contributions = {"phishing": [], "legitimate": []}
@@ -890,6 +1129,7 @@ def predict_endpoint():
     response_payload = {
         "url": url,
         "prediction": prediction_label,
+        "model_class": model_class,
         "probability": round(raw_prob, 4),
         "phishing_probability": round(phishing_probability, 4),
         "confidence": confidence,
@@ -927,6 +1167,9 @@ def predict_endpoint():
             "metadata": {
                 "page_title": result.html_diagnostics.get("page_title", ""),
                 "meta_description": result.html_diagnostics.get("meta_description", ""),
+                "brand_name": result.html_diagnostics.get("extracted_brand_name", ""),
+                "page_domain": result.html_diagnostics.get("extracted_page_domain", ""),
+                "registered_domain": result.html_diagnostics.get("extracted_registered_domain", ""),
                 "has_external_favicon": "Yes" if html_feats.get("has_external_favicon") == 1 else "No",
                 "has_meta_refresh": "Yes" if html_feats.get("has_meta_refresh") == 1 else "No",
                 "title_matches_domain": "Yes" if html_feats.get("title_matches_domain") == 1 else "No",
@@ -957,11 +1200,26 @@ def predict_endpoint():
             "html_extraction_status": "Success" if meta.get("html_extraction_ok") else "Failed",
             "dns_extraction_status": "Success" if meta.get("dns_extraction_ok") else "Failed",
             "whois_extraction_status": "Success" if meta.get("whois_extraction_ok") else "Failed",
+            "model_predict_called": True,
+            "feature_count": 20,
         },
         "top20_features": feat_dict,
         "feature_contributions": feature_contributions,
+        "model_predict_called": True,
+        "bot_protection_detected": False,
         "status": "success",
     }
+
+    _log_phase2_runtime(
+        "final_prediction",
+        URL=url,
+        MODEL_PREDICTION_CALLED="YES",
+        RAW_MODEL_PROBABILITY=raw_prob,
+        MODEL_CLASS=model_class,
+        FINAL_PREDICTION=prediction_label,
+        CONFIDENCE=confidence,
+        RISK_LEVEL=risk_level,
+    )
 
     _write_prediction_trace({
         "url": url,

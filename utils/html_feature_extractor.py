@@ -4,10 +4,22 @@ This module deliberately does not load a phishing model or perform prediction.
 """
 from __future__ import annotations
 
+import logging
 import re
 import time
 from typing import Any
 from urllib.parse import urlparse
+
+
+_LOG = logging.getLogger(__name__)
+
+
+def _diagnostic_log(message: str, *args: object) -> None:
+    """Log diagnostics without requiring a usable Windows console handle."""
+    try:
+        _LOG.info(message, *args)
+    except (OSError, ValueError):
+        pass
 
 try:
     import pandas as pd
@@ -34,9 +46,179 @@ class HTMLFeatureExtractionError(RuntimeError):
 class AntiBotProtectionError(HTMLFeatureExtractionError):
     """Raised when an anti-bot challenge page is detected instead of the actual content."""
 
+    def __init__(self, message: str, markers: list[str] | None = None) -> None:
+        super().__init__(message)
+        self.markers = list(markers or [])
+
+
+# Generic interstitial / bot-protection markers (never website-specific).
+BOT_PROTECTION_MARKERS: tuple[str, ...] = (
+    "just a moment",
+    "cf-browser-verification",
+    "challenge-platform",
+    "attention required",
+    "security check",
+    "robot check",
+    "checking your browser",
+    "awswaf",
+    "awswafcookiedomainlist",
+    "token.awswaf.com",
+    "challenge-container",
+    "verify that you're not a robot",
+    "aws waf",
+    "incapsula",
+    "sucuri_cloudproxy",
+    "akamai bot manager",
+)
+
+
+def detect_bot_protection_markers(title_text: str, content_text: str) -> list[str]:
+    """Return matching generic challenge/WAF markers found in title or HTML."""
+    haystack = f"{title_text or ''}\n{content_text or ''}".lower()
+    found: list[str] = []
+    for marker in BOT_PROTECTION_MARKERS:
+        if marker.lower() in haystack:
+            found.append(marker)
+    return found
+
+
+def parse_host_identity(url_or_host: str) -> dict[str, str]:
+    """Parse a URL or hostname with the public-suffix list (tldextract).
+
+    brand_name is the registrable *domain* label (e.g. kongu for kongu.ac.in),
+    never a public-suffix component such as ``ac`` or ``gov``.
+    """
+    empty = {
+        "host": "",
+        "subdomain": "",
+        "domain": "",
+        "suffix": "",
+        "registered_domain": "",
+        "brand_name": "",
+    }
+    raw = (url_or_host or "").strip()
+    if not raw:
+        return dict(empty)
+
+    host = ""
+    try:
+        candidate = raw if "://" in raw else f"https://{raw}"
+        host = (urlparse(candidate).hostname or "").lower()
+    except Exception:
+        host = raw.split("/")[0].lower()
+
+    try:
+        import tldextract
+
+        ext = tldextract.extract(raw)
+        domain = (ext.domain or "").lower()
+        suffix = (ext.suffix or "").lower()
+        subdomain = (ext.subdomain or "").lower()
+        registered = f"{domain}.{suffix}" if domain and suffix else domain
+        brand = _safe_brand_label(host, domain, suffix)
+        if brand and brand != domain:
+            registered = f"{brand}.{suffix}" if brand and suffix else brand
+            domain = brand
+        return {
+            "host": host,
+            "subdomain": subdomain,
+            "domain": domain,
+            "suffix": suffix,
+            "registered_domain": registered,
+            "brand_name": brand,
+        }
+    except Exception:
+        host_no_www = host[4:] if host.startswith("www.") else host
+        parts = [p for p in host_no_www.split(".") if p]
+        suffix_guess = ".".join(parts[-2:]) if len(parts) >= 3 else (parts[-1] if parts else "")
+        domain_guess = parts[-2] if len(parts) >= 2 else (parts[0] if parts else host)
+        brand = _safe_brand_label(host, domain_guess, suffix_guess)
+        registered = f"{brand}.{suffix_guess}" if brand and suffix_guess else (brand or host_no_www)
+        return {
+            "host": host,
+            "subdomain": "",
+            "domain": brand,
+            "suffix": suffix_guess,
+            "registered_domain": registered,
+            "brand_name": brand,
+        }
+
 
 class CDNErrorPageError(HTMLFeatureExtractionError):
     """Raised when a CDN error page is detected instead of the actual content."""
+
+
+# Labels that are public-suffix components, never a site brand (e.g. "ac" in ac.in).
+_SUFFIX_LIKE_LABELS = frozenset({
+    "ac", "co", "com", "net", "org", "gov", "edu", "res", "gen", "firm",
+    "ind", "info", "biz", "web", "int", "mil", "nic", "or", "ne", "go",
+    "in", "uk", "au", "us", "za", "jp", "br", "cn", "io", "ai",
+})
+
+
+def _safe_brand_label(host: str, domain: str, suffix: str) -> str:
+    """Return the registrable brand label, never a public-suffix token such as ac/gov."""
+    suffix_labels = [p for p in (suffix or "").lower().split(".") if p]
+    host_labels = [p for p in (host or "").lower().split(".") if p and p != "www"]
+    remainder: list[str]
+    if suffix_labels and len(host_labels) >= len(suffix_labels) and host_labels[-len(suffix_labels):] == suffix_labels:
+        remainder = host_labels[:-len(suffix_labels)]
+    else:
+        remainder = [p for p in host_labels if p not in suffix_labels]
+    remainder = [p for p in remainder if p not in _SUFFIX_LIKE_LABELS]
+    if remainder:
+        return remainder[-1]
+    domain_l = (domain or "").lower()
+    if domain_l and domain_l not in _SUFFIX_LIKE_LABELS and domain_l not in suffix_labels:
+        return domain_l
+    return remainder[0] if remainder else domain_l
+
+
+def wait_for_rendered_content(page: Page, timeout_ms: int = 12_000) -> dict[str, int]:
+    """Poll until the document looks like a real page, not a splash or WAF stub.
+
+    Generic heuristics only: enough anchors, visible text, or a large DOM.
+    """
+    stats = {"anchors": 0, "images": 0, "text_len": 0, "elements": 0, "html_len": 0}
+    if page is None:
+        return stats
+    deadline = time.perf_counter() + max(timeout_ms, 0) / 1000.0
+    try:
+        page.wait_for_selector("a[href]", timeout=min(timeout_ms, 10_000))
+    except Exception:
+        pass
+    js = """() => {
+        const body = document.body;
+        const text = (body && body.innerText || '').trim();
+        const html = document.documentElement ? document.documentElement.innerHTML : '';
+        return {
+            anchors: document.querySelectorAll('a[href]').length,
+            images: document.querySelectorAll('img').length,
+            text_len: text.length,
+            elements: document.getElementsByTagName('*').length,
+            html_len: html.length
+        };
+    }"""
+    while True:
+        try:
+            raw = page.evaluate(js) or {}
+            stats = {
+                "anchors": int(raw.get("anchors") or 0),
+                "images": int(raw.get("images") or 0),
+                "text_len": int(raw.get("text_len") or 0),
+                "elements": int(raw.get("elements") or 0),
+                "html_len": int(raw.get("html_len") or 0),
+            }
+        except Exception:
+            pass
+        if stats["anchors"] >= 8 or stats["text_len"] >= 800 or stats["elements"] >= 180:
+            return stats
+        if time.perf_counter() >= deadline:
+            return stats
+        try:
+            page.wait_for_timeout(400)
+        except Exception:
+            return stats
 
 
 
@@ -65,8 +247,20 @@ class HTMLFeatureExtractor:
             )
         try:
             self._playwright = sync_playwright().start()
-            self._browser = self._playwright.chromium.launch(headless=True)
-            print("Browser launched")
+            try:
+                self._browser = self._playwright.chromium.launch(headless=True)
+            except Exception as launch_error:
+                # Fall back to a locally installed Chrome/Edge when Playwright's
+                # bundled Chromium is missing (common in restricted environments).
+                try:
+                    self._browser = self._playwright.chromium.launch(headless=True, channel="chrome")
+                    _diagnostic_log("Browser launched via system Chrome channel")
+                except Exception:
+                    try:
+                        self._browser = self._playwright.chromium.launch(headless=True, channel="msedge")
+                        _diagnostic_log("Browser launched via system Edge channel")
+                    except Exception:
+                        raise launch_error
             self._context = self._browser.new_context(
                 java_script_enabled=True,
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
@@ -74,11 +268,6 @@ class HTMLFeatureExtractor:
                 locale="en-US",
                 timezone_id="America/New_York",
                 color_scheme="light",
-                extra_http_headers={
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                    "Upgrade-Insecure-Requests": "1"
-                }
             )
             self._context.add_init_script("""
                 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -86,7 +275,7 @@ class HTMLFeatureExtractor:
                 Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
                 Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
             """)
-            print("Context created with stealth settings")
+            _diagnostic_log("Context created with stealth settings")
         except Exception as error:
             self.close_browser()
             raise HTMLFeatureExtractionError(f"Could not launch headless Chromium: {error}") from error
@@ -106,42 +295,51 @@ class HTMLFeatureExtractor:
         page: Page | None = None
         try:
             page = self._context.new_page()
-            print("Page created")
+            _diagnostic_log("Page created")
             page.set_default_timeout(self.timeout_ms)
+            nav_response = None
             # Retry loop for navigation
             for attempt in range(2):
                 try:
                     try:
-                        print(f"URL navigation started (networkidle) - attempt {attempt + 1}")
-                        page.goto(url, wait_until="networkidle", timeout=self.timeout_ms)
-                        print("Navigation completed")
+                        _diagnostic_log("URL navigation started (networkidle) - attempt %d", attempt + 1)
+                        nav_response = page.goto(url, wait_until="networkidle", timeout=self.timeout_ms)
+                        _diagnostic_log("Navigation completed")
                     except PlaywrightTimeoutError:
-                        print("URL navigation started (fallback)")
-                        page.goto(url, wait_until="domcontentloaded", timeout=self.timeout_ms)
+                        # Challenge pages often never reach networkidle. Inspect the
+                        # already-loaded document before a second navigation.
+                        try:
+                            pending_content = page.content()
+                            pending_title = page.title()
+                        except Exception:
+                            pending_content, pending_title = "", ""
+                        pending_markers = detect_bot_protection_markers(pending_title, pending_content)
+                        if pending_markers:
+                            HTMLFeatureExtractor._last_bot_markers = pending_markers
+                            HTMLFeatureExtractor._last_html_length = len(pending_content)
+                            raise AntiBotProtectionError(
+                                "Anti-bot challenge detected. Cannot analyze.",
+                                markers=pending_markers,
+                            )
+                        _diagnostic_log("URL navigation started (fallback)")
+                        nav_response = page.goto(url, wait_until="domcontentloaded", timeout=self.timeout_ms)
                         page.wait_for_timeout(750)
-                        print("Navigation completed (fallback)")
+                        _diagnostic_log("Navigation completed (fallback)")
                     break
+                except AntiBotProtectionError:
+                    raise
                 except PlaywrightTimeoutError as error:
                     if attempt == 0:
-                        print(f"PlaywrightTimeoutError on attempt 1, retrying in 5 seconds...")
+                        _diagnostic_log("PlaywrightTimeoutError on attempt 1, retrying in 5 seconds")
                         page.wait_for_timeout(5000)
                     else:
                         raise error
                 except Exception as error:
                     if attempt == 0:
-                        print(f"Navigation error ({error}) on attempt 1, retrying in 5 seconds...")
+                        _diagnostic_log("Navigation error (%s) on attempt 1, retrying in 5 seconds", error)
                         page.wait_for_timeout(5000)
                     else:
                         raise error
-            
-            def is_anti_bot(title_text: str, content_text: str) -> bool:
-                t_lower = title_text.lower()
-                c_lower = content_text.lower()
-                if "just a moment" in t_lower or "attention required" in t_lower or "security check" in t_lower:
-                    return True
-                if "cf-browser-verification" in c_lower or "challenge-platform" in c_lower or "incapsula" in c_lower or "sucuri_cloudproxy" in c_lower or "akamai bot manager" in c_lower:
-                    return True
-                return False
 
             def is_cdn_error(title_text: str, content_text: str) -> bool:
                 t_lower = title_text.lower()
@@ -166,35 +364,59 @@ class HTMLFeatureExtractor:
 
             content = page.content()
             title = page.title()
+            markers = detect_bot_protection_markers(title, content)
 
-            if is_anti_bot(title, content):
-                print("Anti-bot detected, waiting 8 seconds for challenge to resolve...")
+            if markers:
+                _diagnostic_log("Anti-bot detected (%s), waiting for challenge resolution", markers)
                 page.wait_for_timeout(8000)
                 content = page.content()
                 title = page.title()
-                if is_anti_bot(title, content):
-                    raise AntiBotProtectionError("Cloudflare/Anti-bot challenge detected. Cannot analyze.")
+                markers = detect_bot_protection_markers(title, content)
+                if markers:
+                    HTMLFeatureExtractor._last_bot_markers = markers
+                    HTMLFeatureExtractor._last_html_length = len(content)
+                    HTMLFeatureExtractor._last_html_excerpt = content[:8000]
+                    HTMLFeatureExtractor._last_http_status = getattr(nav_response, "status", None)
+                    raise AntiBotProtectionError(
+                        "Anti-bot challenge detected. Cannot analyze.",
+                        markers=markers,
+                    )
+
+            readiness = wait_for_rendered_content(page, timeout_ms=min(12_000, max(self.timeout_ms, 1_000)))
+            _diagnostic_log("Rendered-content wait: %s", readiness)
+            content = page.content()
+            title = page.title()
+            markers = detect_bot_protection_markers(title, content)
+            if markers:
+                HTMLFeatureExtractor._last_bot_markers = markers
+                HTMLFeatureExtractor._last_html_length = len(content)
+                HTMLFeatureExtractor._last_html_excerpt = content[:8000]
+                HTMLFeatureExtractor._last_http_status = getattr(nav_response, "status", None)
+                raise AntiBotProtectionError(
+                    "Anti-bot challenge detected. Cannot analyze.",
+                    markers=markers,
+                )
 
             if is_cdn_error(title, content):
-                print("CDN Error Page detected.")
+                _diagnostic_log("CDN Error Page detected")
                 raise CDNErrorPageError("CDN/CloudFront error page detected. Actual webpage could not be analysed.")
 
-            print("========== PAGE INFO ==========")
-            print("page.url() =", page.url)
-            print("page.title() =", title)
-            print("===============================")
-            HTMLFeatureExtractor._last_page_url   = page.url
+            _diagnostic_log("Page info: url=%s title=%s", page.url, title)
+            HTMLFeatureExtractor._last_page_url = page.url
             HTMLFeatureExtractor._last_page_title = page.title()
+            HTMLFeatureExtractor._last_html_length = len(content)
+            HTMLFeatureExtractor._last_html_excerpt = content[:8000]
+            HTMLFeatureExtractor._last_bot_markers = []
+            HTMLFeatureExtractor._last_http_status = getattr(nav_response, "status", None)
+            HTMLFeatureExtractor._last_readiness = readiness
             return content
         except PlaywrightTimeoutError as error:
-            import traceback
-            traceback.print_exc()
+            _LOG.exception("Timed out while retrieving rendered HTML for %r", url)
             raise HTMLFeatureExtractionError(f"Timed out after {self.timeout_ms} ms while loading {url!r}.") from error
         except (AntiBotProtectionError, CDNErrorPageError) as error:
             raise error
         except Exception as error:
-            import traceback
-            traceback.print_exc()
+            _LOG.exception("Could not retrieve rendered HTML for %r", url)
             raise HTMLFeatureExtractionError(f"Could not retrieve rendered HTML for {url!r}: {error}") from error
         finally:
             if page is not None:
@@ -210,8 +432,7 @@ class HTMLFeatureExtractor:
         try:
             return BeautifulSoup(html, "lxml")
         except Exception:
-            import traceback
-            traceback.print_exc()
+            _LOG.exception("lxml parsing failed; falling back to html.parser")
             return BeautifulSoup(html, "html.parser")
 
     @staticmethod
@@ -255,17 +476,9 @@ class HTMLFeatureExtractor:
         num_forms = len(forms)
 
         # Extract registered domain of the host page for external submission checking
-        page_host = ""
-        page_domain = ""
-        if page_url and isinstance(page_url, str):
-            try:
-                parsed_page = urlparse(page_url.strip())
-                page_host = (parsed_page.hostname or "").lower()
-                parts = page_host.split(".")
-                page_domain = ".".join(parts[-2:]) if len(parts) >= 2 else page_host
-            except Exception:
-                page_host = ""
-                page_domain = ""
+        identity = parse_host_identity(page_url) if page_url and isinstance(page_url, str) else parse_host_identity("")
+        page_host = identity["host"]
+        page_domain = identity["registered_domain"]
 
         num_password_inputs = 0
         num_hidden_inputs = 0
@@ -310,8 +523,7 @@ class HTMLFeatureExtractor:
                 if not parsed_action.scheme and not action_host:
                     has_relative_form_action = 1
                 elif action_host:
-                    action_parts = action_host.split(".")
-                    action_domain = ".".join(action_parts[-2:]) if len(action_parts) >= 2 else action_host
+                    action_domain = parse_host_identity(action_host)["registered_domain"] or action_host
 
                     if page_domain and action_domain != page_domain:
                         is_external = True
@@ -374,17 +586,9 @@ class HTMLFeatureExtractor:
                 "has_mismatch_link_text": 0,
             }
 
-        page_host = ""
-        page_domain = ""
-        if page_url and isinstance(page_url, str):
-            try:
-                parsed_page = urlparse(page_url.strip())
-                page_host = (parsed_page.hostname or "").lower()
-                parts = page_host.split(".")
-                page_domain = ".".join(parts[-2:]) if len(parts) >= 2 else page_host
-            except Exception:
-                page_host = ""
-                page_domain = ""
+        identity = parse_host_identity(page_url) if page_url and isinstance(page_url, str) else parse_host_identity("")
+        page_host = identity["host"]
+        page_domain = identity["registered_domain"]
 
         num_external = 0
         num_internal = 0
@@ -419,8 +623,7 @@ class HTMLFeatureExtractor:
                         is_internal = True
                         num_internal += 1
                     elif href_host:
-                        href_parts = href_host.split(".")
-                        href_domain = ".".join(href_parts[-2:]) if len(href_parts) >= 2 else href_host
+                        href_domain = parse_host_identity(href_host)["registered_domain"] or href_host
 
                         if page_domain and href_domain == page_domain:
                             is_internal = True
@@ -446,9 +649,7 @@ class HTMLFeatureExtractor:
 
             match = url_regex.search(anchor_text)
             if match:
-                text_host = match.group(1).lower()
-                text_parts = text_host.split(".")
-                text_domain = ".".join(text_parts[-2:]) if len(text_parts) >= 2 else text_host
+                text_domain = parse_host_identity(match.group(1).lower())["registered_domain"]
 
                 if is_null_self or is_external:
                     has_mismatch_link_text = 1
@@ -456,8 +657,7 @@ class HTMLFeatureExtractor:
                     try:
                         parsed_href = urlparse(href)
                         actual_host = (parsed_href.hostname or page_host).lower()
-                        actual_parts = actual_host.split(".")
-                        actual_domain = ".".join(actual_parts[-2:]) if len(actual_parts) >= 2 else actual_host
+                        actual_domain = parse_host_identity(actual_host)["registered_domain"] or actual_host
                         if text_domain != actual_domain:
                             has_mismatch_link_text = 1
                     except Exception:
@@ -611,31 +811,14 @@ class HTMLFeatureExtractor:
         if soup is None:
             raise ValueError("A parsed BeautifulSoup object is required.")
 
-        page_host = ""
-        page_domain = ""
-        brand_name = ""
-        _tld_ext_domain = ""
-        _tld_ext_suffix = ""
-        _tld_ext_registered = ""
-        _tld_exception = None
         page_url = page_url or ""
-        if page_url and isinstance(page_url, str):
-            try:
-                import tldextract
-                ext = tldextract.extract(page_url)
-                _tld_ext_domain     = ext.domain
-                _tld_ext_suffix     = ext.suffix
-                _tld_ext_registered = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
-                if ext.domain:
-                    brand_name = ext.domain
-                    page_domain = _tld_ext_registered
-                page_host = urlparse(page_url.strip()).hostname or ""
-            except Exception as _e:
-                _tld_exception = _e
-                page_host = urlparse(page_url.strip()).hostname or ""
-                parts = page_host.split('.')
-                page_domain = ".".join(parts[-2:]) if len(parts) >= 2 else page_host
-                brand_name = parts[-2] if len(parts) >= 2 else page_host
+        identity = parse_host_identity(page_url) if isinstance(page_url, str) else parse_host_identity("")
+        page_host = identity["host"]
+        page_domain = identity["registered_domain"]
+        brand_name = identity["brand_name"]
+        _tld_ext_domain = identity["domain"]
+        _tld_ext_suffix = identity["suffix"]
+        _tld_ext_registered = identity["registered_domain"]
 
         # External Favicon Check
         has_external_favicon = 0
@@ -647,8 +830,7 @@ class HTMLFeatureExtractor:
                     parsed_href = urlparse(href)
                     href_host = (parsed_href.hostname or "").lower()
                     if href_host:
-                        href_parts = href_host.split(".")
-                        href_domain = ".".join(href_parts[-2:]) if len(href_parts) >= 2 else href_host
+                        href_domain = parse_host_identity(href_host)["registered_domain"] or href_host
 
                         if page_domain and href_domain != page_domain:
                             has_external_favicon = 1
@@ -670,6 +852,9 @@ class HTMLFeatureExtractor:
                 has_meta_refresh = 1
                 break
 
+        description = soup.find("meta", attrs={"name": lambda value: isinstance(value, str) and value.lower() == "description"})
+        meta_description = description.get("content", "").strip() if description else ""
+
         # Title Matches Domain Check
         raw_title = getattr(HTMLFeatureExtractor, '_last_page_title', None)
         if not raw_title and soup.title:
@@ -685,14 +870,27 @@ class HTMLFeatureExtractor:
             return s
 
         normalized_title = normalize_str(raw_title)
-        normalized_brand = normalize_str(brand_name)
+        normalized_description = normalize_str(meta_description)
+        searchable_text = f"{normalized_title} {normalized_description}".strip()
+
+        brand_candidates: list[str] = []
+        for token in (brand_name, identity.get("domain", ""), page_domain.split(".")[0] if page_domain else ""):
+            token_n = normalize_str(token)
+            if token_n and token_n not in _SUFFIX_LIKE_LABELS and token_n not in brand_candidates:
+                brand_candidates.append(token_n)
+        for label in (identity.get("host") or "").split("."):
+            label_n = normalize_str(label)
+            if label_n and label_n not in {"www"} and label_n not in _SUFFIX_LIKE_LABELS and label_n not in brand_candidates:
+                brand_candidates.append(label_n)
+        # Prefer longer brand tokens so "kongu" wins over a leftover "ac".
+        brand_candidates.sort(key=len, reverse=True)
 
         title_matches_domain = 0
         title_domain_similarity_score = None
         match_tier_used = "None"
+        normalized_brand = brand_candidates[0] if brand_candidates else normalize_str(brand_name)
 
-        if normalized_brand and normalized_title:
-            # Load aliases
+        if brand_candidates and searchable_text:
             import json
             import os
             try:
@@ -701,51 +899,58 @@ class HTMLFeatureExtractor:
                     brand_aliases = json.load(f)
             except Exception:
                 brand_aliases = {}
-                
-            aliases_for_brand = brand_aliases.get(normalized_brand, [])
-            
-            # 1. Exact match
-            if normalized_brand == normalized_title:
-                title_matches_domain = 1
-                title_domain_similarity_score = 100.0
-                match_tier_used = "Exact Match"
-            else:
-                # 2. Alias match
-                alias_matched = False
+
+            matched = False
+            for candidate in brand_candidates:
+                aliases_for_brand = brand_aliases.get(candidate, [])
+                if candidate == normalized_title:
+                    title_matches_domain = 1
+                    title_domain_similarity_score = 100.0
+                    match_tier_used = "Exact Match"
+                    normalized_brand = candidate
+                    matched = True
+                    break
+                alias_hit = False
                 for alias in aliases_for_brand:
                     alias_norm = normalize_str(alias)
-                    if alias_norm and (alias_norm in normalized_title or normalized_title in alias_norm):
+                    if alias_norm and (alias_norm in searchable_text or searchable_text in alias_norm):
                         title_matches_domain = 1
                         title_domain_similarity_score = 100.0
-                        alias_matched = True
                         match_tier_used = f"Alias Match ({alias})"
+                        normalized_brand = candidate
+                        alias_hit = True
+                        matched = True
                         break
-                
-                if not alias_matched:
-                    # 3. Substring match
-                    if normalized_brand in normalized_title:
-                        title_matches_domain = 1
-                        title_domain_similarity_score = 100.0
-                        match_tier_used = "Substring Match"
-                    else:
-                        import difflib
-                        # 4. Token similarity
-                        tokens = normalized_title.split()
-                        best_token_ratio = 0.0
-                        for token in tokens:
-                            ratio = difflib.SequenceMatcher(None, normalized_brand, token).ratio()
-                            if ratio > best_token_ratio:
-                                best_token_ratio = ratio
-                                
-                        # 5. SequenceMatcher fallback (entire title)
-                        fallback_ratio = difflib.SequenceMatcher(None, normalized_brand, normalized_title).ratio()
-                        
-                        if best_token_ratio >= fallback_ratio:
-                            title_domain_similarity_score = round(best_token_ratio * 100.0, 2)
-                            match_tier_used = "Token Similarity"
-                        else:
-                            title_domain_similarity_score = round(fallback_ratio * 100.0, 2)
-                            match_tier_used = "SequenceMatcher Fallback"
+                if alias_hit:
+                    break
+                if candidate in searchable_text:
+                    title_matches_domain = 1
+                    title_domain_similarity_score = 100.0
+                    match_tier_used = "Substring Match"
+                    normalized_brand = candidate
+                    matched = True
+                    break
+
+            if not matched:
+                import difflib
+                tokens = searchable_text.split()
+                best_token_ratio = 0.0
+                best_candidate = normalized_brand
+                for candidate in brand_candidates:
+                    for token in tokens:
+                        if len(token) < 3:
+                            continue
+                        ratio = difflib.SequenceMatcher(None, candidate, token).ratio()
+                        if ratio > best_token_ratio:
+                            best_token_ratio = ratio
+                            best_candidate = candidate
+                    fallback_ratio = difflib.SequenceMatcher(None, candidate, searchable_text).ratio()
+                    if fallback_ratio > best_token_ratio:
+                        best_token_ratio = fallback_ratio
+                        best_candidate = candidate
+                title_domain_similarity_score = round(best_token_ratio * 100.0, 2)
+                match_tier_used = "Token Similarity"
+                normalized_brand = best_candidate
 
         # DOM Structural Metrics (Total Elements & Tree Depth)
 
@@ -761,9 +966,6 @@ class HTMLFeatureExtractor:
         root = soup.find("html") or soup
         dom_depth = _calc_depth(root) if root else 0
 
-        description = soup.find("meta", attrs={"name": lambda value: isinstance(value, str) and value.lower() == "description"})
-        meta_description = description.get("content", "").strip() if description else ""
-
         _raw_return = {
             "has_external_favicon": has_external_favicon,
             "has_meta_refresh": has_meta_refresh,
@@ -775,6 +977,10 @@ class HTMLFeatureExtractor:
             "page_title": raw_title,
             "meta_description": meta_description,
             "extracted_brand_name": brand_name,
+            "extracted_page_domain": page_domain,
+            "extracted_registered_domain": _tld_ext_registered,
+            "extracted_tld_domain": _tld_ext_domain,
+            "extracted_tld_suffix": _tld_ext_suffix,
         }
 
         return _raw_return
@@ -807,22 +1013,25 @@ class HTMLFeatureExtractor:
         return combined
 
     def close_browser(self) -> None:
-
         """Close context, Chromium, and Playwright resources; safe to call repeatedly."""
-        try:
-            if self._context is not None:
-                self._context.close()
-        finally:
-            self._context = None
+        for resource_name, resource, closer in (
+            ("context", self._context, "close"),
+            ("browser", self._browser, "close"),
+            ("playwright", self._playwright, "stop"),
+        ):
+            if resource is None:
+                continue
             try:
-                if self._browser is not None:
-                    self._browser.close()
-                    print("Browser closed")
-            finally:
-                self._browser = None
-                if self._playwright is not None:
-                    self._playwright.stop()
-                self._playwright = None
+                getattr(resource, closer)()
+            except Exception:
+                # Cleanup must never hide the browser-initialization exception.
+                try:
+                    _LOG.exception("Failed to close Playwright %s", resource_name)
+                except (OSError, ValueError):
+                    pass
+        self._context = None
+        self._browser = None
+        self._playwright = None
 
     def __enter__(self) -> "HTMLFeatureExtractor":
         self.launch_browser()
