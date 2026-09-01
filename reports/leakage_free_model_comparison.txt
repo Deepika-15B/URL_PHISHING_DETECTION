@@ -1,0 +1,142 @@
+========================================================================
+LEAKAGE-FREE ML MODEL COMPARISON REPORT (18 FEATURES)
+========================================================================
+Generated: 2026-08-31 17:57:20 UTC
+
+1. DATASET SPECIFICATION
+------------------------------------------------------------------------
+Train set:      e:\phishing_project_ieee\phishing_detection_ieee\data\processed_leakage_free/train.csv (164,194 samples: 69,799 Phishing, 94,395 Legitimate)
+Validation set: e:\phishing_project_ieee\phishing_detection_ieee\data\processed_leakage_free/validation.csv (35,184 samples: 14,957 Phishing, 20,227 Legitimate)
+Test set:       e:\phishing_project_ieee\phishing_detection_ieee\data\processed_leakage_free/test.csv (35,185 samples: 14,957 Phishing, 20,228 Legitimate)
+
+Target Label Convention: 0=Phishing | 1=Legitimate
+
+2. FEATURE SPECIFICATION (18 FEATURES)
+------------------------------------------------------------------------
+Included 18 Features:
+   1. NoOfExternalRef
+   2. LineOfCode
+   3. NoOfSelfRef
+   4. NoOfImage
+   5. NoOfJS
+   6. HasSocialNet
+   7. NoOfCSS
+   8. HasCopyrightInfo
+   9. NoOfOtherSpecialCharsInURL
+  10. LargestLineLength
+  11. HasDescription
+  12. NoOfDegitsInURL
+  13. URLLength
+  14. IsResponsive
+  15. DegitRatioInURL
+  16. DomainTitleMatchScore
+  17. SpacialCharRatioInURL
+  18. HasSubmitButton
+
+Strictly Excluded Leakage Features:
+  - URLSimilarityIndex (REMOVED)
+  - IsHTTPS (REMOVED)
+
+3. PREPROCESSING METHOD
+------------------------------------------------------------------------
+- Imputation: SimpleImputer(strategy='median') fitted on Train set ONLY
+- Scaling:    StandardScaler() fitted on Train set ONLY
+- Validation and Test sets transformed using Train-fitted artifacts (no leakage)
+
+4. MODEL ARCHITECTURES & CONFIGURATIONS
+------------------------------------------------------------------------
+FNN:         Input(18)->Dense(64,ReLU)->Dropout(0.20)->Dense(32,ReLU)->Dropout(0.20)->Dense(1,Sigmoid)
+             Adam(lr=5e-4), BinaryCE, Batch=32, MaxEpochs=100, EarlyStop(p=8), ReduceLR(f=0.5,p=3)
+DNN:         Input(18)->Dense(128,ReLU,BN)->Drop(0.30)->Dense(64,ReLU,BN)->Drop(0.30)->Dense(32,ReLU,BN)->Drop(0.20)->Sigmoid
+             Adam(lr=5e-4), BinaryCE, Batch=32, MaxEpochs=100, EarlyStop(p=8)
+Wide & Deep: Wide(linear,18) + Deep(128->64->32,BN,ReLU,Drop) -> Concat -> Dense(1,Sigmoid)
+             Adam(lr=5e-4), BinaryCE, Batch=32, MaxEpochs=100
+TabNet:      n_d=16, n_a=16, n_steps=5, gamma=1.5, lambda_sparse=1e-4
+             Adam(lr=1e-3), Batch=1024, VBatch=128, MaxEpochs=100, Patience=10
+
+5. TEST SET EVALUATION METRICS
+------------------------------------------------------------------------
+Model            Accuracy  Precision     Recall         F1    ROC-AUC   Train(s)   Inf(s)
+------------------------------------------------------------------------------------------
+FNN              0.998636   0.998616   0.999011   0.998814   0.999968     283.42   0.2442
+DNN              0.997897   0.997875   0.998467   0.998171   0.999944     153.80   0.2630
+Wide & Deep      0.992923   0.988460   0.999357   0.993879   0.999839      89.15   0.2523
+TabNet           0.914680   0.871186   0.999357   0.930880   0.998566 N/A (pre-trained)   2.0042
+
+6. CONFUSION MATRICES & COUNTS
+------------------------------------------------------------------------
+Positive=1 (Legitimate) | Negative=0 (Phishing)
+TP=Legit predicted Legit | TN=Phish predicted Phish | FP=Phish predicted Legit | FN=Legit predicted Phish
+
+--- FNN ---
+[[TN=14929, FP=28], [FN=20, TP=20208]]
+TP:20,208 TN:14,929 FP:28 FN:20
+Classification Report:
+               precision    recall  f1-score   support
+
+  Phishing(0)     0.9987    0.9981    0.9984     14957
+Legitimate(1)     0.9986    0.9990    0.9988     20228
+
+     accuracy                         0.9986     35185
+    macro avg     0.9986    0.9986    0.9986     35185
+ weighted avg     0.9986    0.9986    0.9986     35185
+
+
+--- DNN ---
+[[TN=14914, FP=43], [FN=31, TP=20197]]
+TP:20,197 TN:14,914 FP:43 FN:31
+Classification Report:
+               precision    recall  f1-score   support
+
+  Phishing(0)     0.9979    0.9971    0.9975     14957
+Legitimate(1)     0.9979    0.9985    0.9982     20228
+
+     accuracy                         0.9979     35185
+    macro avg     0.9979    0.9978    0.9978     35185
+ weighted avg     0.9979    0.9979    0.9979     35185
+
+
+--- Wide & Deep ---
+[[TN=14721, FP=236], [FN=13, TP=20215]]
+TP:20,215 TN:14,721 FP:236 FN:13
+Classification Report:
+               precision    recall  f1-score   support
+
+  Phishing(0)     0.9991    0.9842    0.9916     14957
+Legitimate(1)     0.9885    0.9994    0.9939     20228
+
+     accuracy                         0.9929     35185
+    macro avg     0.9938    0.9918    0.9927     35185
+ weighted avg     0.9930    0.9929    0.9929     35185
+
+
+--- TabNet ---
+[[TN=11968, FP=2989], [FN=13, TP=20215]]
+TP:20,215 TN:11,968 FP:2,989 FN:13
+Classification Report:
+               precision    recall  f1-score   support
+
+  Phishing(0)     0.9989    0.8002    0.8886     14957
+Legitimate(1)     0.8712    0.9994    0.9309     20228
+
+     accuracy                         0.9147     35185
+    macro avg     0.9351    0.8998    0.9097     35185
+ weighted avg     0.9255    0.9147    0.9129     35185
+
+
+7. BEST MODEL SELECTION
+------------------------------------------------------------------------
+Selected Best Model: FNN
+F1=0.998814 | Accuracy=0.998636 | ROC-AUC=0.999968
+Rationale: FNN achieves highest F1 (0.998814) and ROC-AUC (0.999968) on the untouched 35,185-sample leakage-free test set (18 features, no URLSimilarityIndex, no IsHTTPS).
+
+8. SAVED ARTIFACTS
+------------------------------------------------------------------------
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\fnn_leakage_free.keras
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\dnn_leakage_free.keras
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\wide_deep_leakage_free.keras
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\tabnet_leakage_free.zip
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\imputer.pkl
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\scaler.pkl
+  e:\phishing_project_ieee\phishing_detection_ieee\models\leakage_free\features_18.pkl
+========================================================================
